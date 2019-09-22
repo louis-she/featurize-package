@@ -1,5 +1,5 @@
-from feautirze_jupyterlab.core import dataflow, option
-from feautirze_jupyterlab.processors import Processor
+from featurize_jupyterlab.core import dataflow, option
+from featurize_jupyterlab.processors import Processor
 import cv2
 
 @dataflow('Image Resizer', 'Resize image to any shape')
