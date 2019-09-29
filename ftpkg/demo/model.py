@@ -1,4 +1,4 @@
-from featurize_jupyterlab.core import model, option
+from featurize_jupyterlab.core import model, option, metadata
 from torchvision import models
 from torch import nn
 import importlib
