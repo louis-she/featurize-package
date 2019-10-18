@@ -4,7 +4,7 @@ import setuptools
 setuptools.setup(
     name='featurize-package',
     description='Official packages for featurize.',
-    version='0.0.6',
+    version='0.0.7',
     packages=setuptools.find_packages(),
     url="https://github.com/louis-she/featurize-package",
     author='louis',

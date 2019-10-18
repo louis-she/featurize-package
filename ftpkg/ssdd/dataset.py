@@ -49,12 +49,13 @@ class SSDDDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         df_row = self.df.iloc[idx]
         image_id, mask = self.make_mask(df_row)
-        image_path = os.path.join(self.root, image_id)
+        image_path = os.path.join(self.root, 'train', image_id)
         img = cv2.imread(image_path)
         if self.transforms is not None:
             img, mask = self.transforms([img, mask])
         img = self.to_tensor(img)
-        mask = mask[0].permute(2, 0, 1)
+        mask = self.to_tensor(mask)
+
         return img, mask, image_id, (df_row.defects != 0).astype(np.int64)
 
     def __len__(self):
@@ -62,7 +63,7 @@ class SSDDDataset(torch.utils.data.Dataset):
 
 
 def prepare_datasets(folder):
-    if os.path.isdir(folder / 'train'):
+    if os.path.isfile(folder / 'train_processed.csv'):
         return
 
     os.environ['KAGGLE_USERNAME'] = 'snaker'
@@ -78,6 +79,40 @@ def prepare_datasets(folder):
             pass
         with zipfile.ZipFile(folder / f'{category}_images.zip') as f:
             f.extractall(images_dir)
+    
+    gen_processed_csv(folder)
+
+
+def gen_processed_csv(folder):
+    a = pd.read_csv(folder / 'train.csv')
+    processed_csv_file = folder / 'train_processed.csv'
+    if os.path.isfile(processed_csv_file):
+        return
+    b,c = [], [] 
+    d,e = {}, {}
+    for i,j in a.iterrows():
+        if j['ImageId_ClassId'].split('_')[0] not in d.keys():
+            d[j['ImageId_ClassId'].split('_')[0]] = []
+            d[j['ImageId_ClassId'].split('_')[0]].append(j['EncodedPixels'])
+        else:
+            d[j['ImageId_ClassId'].split('_')[0]].append(j['EncodedPixels'])
+
+    for i,j in d.items():
+        x = []
+        x.append(i)
+        x.append(j[0])
+        x.append(j[1])
+        x.append(j[2])
+        x.append(j[3])
+        if j[0] is not np.nan or j[1] is not np.nan or j[2] is not np.nan or j[3] is not np.nan:
+            defect = 1
+        else:
+            defect = 0
+        x.append(defect)
+        c.append(x)
+
+    df = pd.DataFrame(c, columns=['ImageId','1','2','3','4','defects'])
+    df.to_csv(processed_csv_file, index=False)
 
 
 class FeaturizeSSDDDataset(Dataset):
@@ -88,6 +123,7 @@ class FeaturizeSSDDDataset(Dataset):
     folder = Option(default='/datasets')
     validation_percentage = Option(type='number')
     random_split_seed = Option(type='number')
+    batch_size = Option(type='number', default=16)
     force_download = Option(type='boolean')
 
     train_dataloader = Option(type='hardcode', help='The `Train Dataloader` which should be already configured', required=False)
@@ -96,13 +132,13 @@ class FeaturizeSSDDDataset(Dataset):
     def __call__(self):
         folder = Path(self.folder)
         prepare_datasets(folder)
-        df = pd.read_csv(folder / 'train.csv')
+        df = pd.read_csv(folder / 'train_processed.csv', index_col='ImageId')
         train_df, val_df = train_test_split(
             df,
             test_size=self.validation_percentage,
             random_state=self.random_split_seed
         )
         return (
-            SSDDDataset(train_df, folder, self.train_dataloader),
-            SSDDDataset(val_df, folder, self.val_dataloader)
+            torch.utils.data.DataLoader(SSDDDataset(train_df, folder, self.train_dataloader), self.batch_size),
+            torch.utils.data.DataLoader(SSDDDataset(val_df, folder, self.val_dataloader), self.batch_size)
         )

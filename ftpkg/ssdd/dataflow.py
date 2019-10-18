@@ -4,7 +4,7 @@ import json
 import albumentations as albu
 
 
-class Resize(BasicImageTransformation):
+class Resize(DualImageTransformation):
     """Resize image to any size
     """
     columns_config = Option(type='string', default='{"image": 0, "mask": 1}', post_process=lambda x: json.loads(x))
