@@ -71,7 +71,7 @@ The following table shows the signature of `__call__` method of different types 
 ## Transformation
 
 `Transformation` is a `Dataflow` component. It is mainly used as define the data transform pipeline.
-The [test code](https://github.com/louis-she/featurize-jupyterlab/blob/scl/refactor/featurize_jupyterlab/tests/test_transformation.py) of `featurize-jupyterlab` is a set of good examples to see how to write a `Transformation`.
+The [test code](https://github.com/louis-she/featurize-jupyterlab/blob/master/featurize_jupyterlab/tests/test_transformation.py) of `featurize-jupyterlab` is a set of good examples to see how to write a `Transformation`.
 
 There are 4 kinds of transformation class which you can chose to inherit based on what you want.
 
