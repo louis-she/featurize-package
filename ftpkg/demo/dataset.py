@@ -2,6 +2,14 @@ from featurize_jupyterlab.core import dataset, option, metadata
 from torchvision import datasets, transforms
 
 
+class MNISTTrain(Base):
+    '''This is a simple wrap for torchvision.datasets.MNIST(train=True)
+    '''
+    fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")
+
+    def __call__(self):
+        return datasets.MNIST(self.fold)
+
 @dataset('MNIST Train', 'This is a simple wrap for torchvision.datasets.MNIST(train=True)')
 @option('fold', help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")
 @metadata('banner', 'https://upload.wikimedia.org/wikipedia/commons/2/27/MnistExamples.png')

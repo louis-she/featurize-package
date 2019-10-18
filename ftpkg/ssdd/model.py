@@ -1,17 +1,20 @@
-from featurize_jupyterlab.core import model, option, metadata
+from featurize_jupyterlab.core import Model, Option
 from .unet import Unet
 
 encoder_weights_collection = [('random', None), 'imagenet']
 encoder_name_collection = ['resnet34', 'resnet50', 'resnet101']
 
-@model('Unet', 'Unet is a fully convolution neural network for image semantic segmentation')
-@option('encoder_name', help='encoder of the unet', default='resnet34', type='collection', collection=encoder_name_collection)
-@option('encoder_weights', help='pretrained weights of encoder', default='imagenet', type='collection', collection=encoder_weights_collection)
-@option('class_number', help='class number of mask', type='number')
-def unet(encoder_name, encoder_weights, class_number):
-    return Unet(
-        encoder_name=encoder_name,
-        encoder_weights=encoder_weights,
-        classes=class_number,
-        activation=None
-    )
+class UNet(Model):
+    """Unet is a fully convolution neural network for image semantic segmentation
+    """
+    encoder_name = Option(default='resnet34', type='collection', collection=encoder_name_collection)
+    encoder_weights = Option(default='imagenet', type='collection', collection=encoder_weights_collection)
+    class_number = Option(default=2, type='number', help='class number of mask')
+
+    def __call__(self):
+        return Unet(
+            encoder_name=self.encoder_name,
+            encoder_weights=self.encoder_weights,
+            classes=self.class_number,
+            activation=None
+        )

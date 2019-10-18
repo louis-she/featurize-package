@@ -1,55 +1,23 @@
-from featurize_jupyterlab.core import dataset, option, metadata
-import numpy as np
-import pandas as pd
-import cv2
-from torchvision import datasets, transforms
 import os
-import kaggle
 import zipfile
 from pathlib import Path
-import torch
-from sklearn.model_selection import train_test_split
+
 import albumentations as albu
-from albumentations import (HorizontalFlip, VerticalFlip, IAAPiecewiseAffine, ElasticTransform, IAASharpen, RandomBrightness,  ShiftScaleRotate, OneOf, Flip, Normalize, Resize, Compose, GaussNoise, ElasticTransform)
+import cv2
+import kaggle
+import numpy as np
+import pandas as pd
+import torch
+from albumentations import (Compose, ElasticTransform, Flip, GaussNoise,
+                            HorizontalFlip, IAAPiecewiseAffine, IAASharpen,
+                            Normalize, OneOf, RandomBrightness, Resize,
+                            ShiftScaleRotate, VerticalFlip)
 from albumentations.imgaug.transforms import IAASharpen
+from sklearn.model_selection import train_test_split
+from torchvision import datasets, transforms
 from torchvision.transforms import ToTensor
 
-
-def make_transforms(phase, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
-    list_transforms = []
-    if phase == "train":
-         list_transforms.extend(
-            [
-                albu.HorizontalFlip(p=0.5),
-                albu.IAAAdditiveGaussianNoise(p=0.2),
-                albu.IAAPerspective(p=0.5),
-                albu.OneOf(
-                    [
-                        albu.CLAHE(p=1),
-                        albu.RandomBrightness(p=1),
-                        albu.RandomGamma(p=1),],
-                    p=0.9,),
-                albu.OneOf(
-                    [
-                        albu.IAASharpen(p=1),
-                        albu.Blur(blur_limit=3, p=1),
-                        albu.MotionBlur(blur_limit=3, p=1),
-                    ],p=0.9,),
-                albu.OneOf(
-                    [
-                        albu.RandomContrast(p=1),
-                        albu.HueSaturationValue(p=1),],
-                    p=0.9,),
-            ])
-    list_transforms.extend(
-        [
-            Normalize(mean=mean, std=std, p=1),
-            ToTensor(),
-        ]
-    )
-    list_trfms = Compose(list_transforms)
-    return list_trfms
-
+from featurize_jupyterlab.core import Dataset, Option
 
 
 class SSDDDataset(torch.utils.data.Dataset):
@@ -59,6 +27,7 @@ class SSDDDataset(torch.utils.data.Dataset):
         self.root = data_folder
         self.transforms = transforms
         self.fnames = self.df.index.tolist()
+        self.to_tensor = ToTensor()
 
     def make_mask(self, df_row):
         '''Given a row index, return image_id and mask (256, 1600, 4)'''
@@ -83,9 +52,8 @@ class SSDDDataset(torch.utils.data.Dataset):
         image_path = os.path.join(self.root, image_id)
         img = cv2.imread(image_path)
         if self.transforms is not None:
-            augmented = self.transforms(image=img, mask=mask)
-            img = augmented['image']
-            mask = augmented['mask']
+            img, mask = self.transforms([img, mask])
+        img = self.to_tensor(img)
         mask = mask[0].permute(2, 0, 1)
         return img, mask, image_id, (df_row.defects != 0).astype(np.int64)
 
@@ -112,17 +80,29 @@ def prepare_datasets(folder):
             f.extractall(images_dir)
 
 
-@dataset('SSDD Dataset', 'Kaggle Severstal: Steel Defect Detection')
-@option('folder', help='The folder to donwload the datasets', default='/datasets')
-@option('validation_percentage', help='The percentage(float from 0 to 1) to split as validation set', default='0.1', type='number')
-@option('random_split_seed', help='The seed for spliting the dataset', type='number')
-@option('force_download', help='Redownload the datasets', default=True, type='boolean')
-def ssdd_dataset(folder, validation_percentage=0.1, random_split_seed=666, force_download=False):
-    folder = Path(folder)
-    prepare_datasets(folder)
-    df = pd.read_csv(folder / 'train.csv')
-    train_df, val_df = train_test_split(df, test_size=0.1, random_state=random_split_seed)
-    return (
-        SSDDDataset(train_df, folder, make_transforms('train')),
-        SSDDDataset(val_df, folder, make_transforms('val'))
-    )
+class FeaturizeSSDDDataset(Dataset):
+    """Kaggle Severstal Steel Defect Detection Dataset
+    """
+    name = 'SSDD Dataset'
+
+    folder = Option(default='/datasets')
+    validation_percentage = Option(type='number')
+    random_split_seed = Option(type='number')
+    force_download = Option(type='boolean')
+
+    train_dataloader = Option(type='hardcode', help='The `Train Dataloader` which should be already configured', required=False)
+    val_dataloader = Option(type='hardcode', help='The `Val Dataloader` which should be already configured', required=False)
+
+    def __call__(self):
+        folder = Path(self.folder)
+        prepare_datasets(folder)
+        df = pd.read_csv(folder / 'train.csv')
+        train_df, val_df = train_test_split(
+            df,
+            test_size=self.validation_percentage,
+            random_state=self.random_split_seed
+        )
+        return (
+            SSDDDataset(train_df, folder, self.train_dataloader),
+            SSDDDataset(val_df, folder, self.val_dataloader)
+        )

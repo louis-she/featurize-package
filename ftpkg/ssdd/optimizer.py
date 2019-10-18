@@ -1,9 +1,12 @@
-from featurize_jupyterlab.core import optimizer, option
+from featurize_jupyterlab.core import Optimizer, Option
 from featurize_jupyterlab import g
 from torch.optim import SGD
 
 
-@optimizer('PyTorch SGD', 'Simple wrap of the SGD optimizer of PyTorch')
-@option('lr', help='Learning Rate', type='number', required=True, default='0.1')
-def sgd(lr):
-    return SGD(g.model.parameters(), float(lr))
+class PyTorchSGD(Optimizer):
+    """Simple wrap of the SGD optimizer of PyTorch
+    """
+    learning_rate = Option(name="Learning Ratel", default=0.1, type='number')
+
+    def __call__(self):
+        return SGD(self.model.parameters(), float(self.learning_rate))

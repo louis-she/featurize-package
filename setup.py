@@ -12,6 +12,7 @@ setuptools.setup(
     keywords='pytorch minecraft',
     include_package_data=True,
     install_requires=[
+        'featurize-jupyterlab',
         'torchvision>=0.4.0',
         'albumentations',
         'torch',
