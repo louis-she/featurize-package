@@ -4,7 +4,6 @@ from pathlib import Path
 
 import albumentations as albu
 import cv2
-import kaggle
 import numpy as np
 import pandas as pd
 import torch
@@ -68,6 +67,7 @@ def prepare_datasets(folder):
 
     os.environ['KAGGLE_USERNAME'] = 'snaker'
     os.environ['KAGGLE_KEY'] = 'fa14a05cbcc69c74d8c98ff91c8385a8'
+    import kaggle
     kaggle.api.competition_download_files('severstal-steel-defect-detection', folder, False, False)
     with zipfile.ZipFile(folder / 'severstal-steel-defect-detection.zip', 'r') as zip_ref:
         zip_ref.extractall(folder)
@@ -79,7 +79,7 @@ def prepare_datasets(folder):
             pass
         with zipfile.ZipFile(folder / f'{category}_images.zip') as f:
             f.extractall(images_dir)
-    
+
     gen_processed_csv(folder)
 
 
@@ -88,7 +88,7 @@ def gen_processed_csv(folder):
     processed_csv_file = folder / 'train_processed.csv'
     if os.path.isfile(processed_csv_file):
         return
-    b,c = [], [] 
+    b,c = [], []
     d,e = {}, {}
     for i,j in a.iterrows():
         if j['ImageId_ClassId'].split('_')[0] not in d.keys():
