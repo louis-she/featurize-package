@@ -1,5 +1,4 @@
 from featurize_jupyterlab.core import Optimizer, Option
-from featurize_jupyterlab import g
 from torch.optim import SGD
 
 

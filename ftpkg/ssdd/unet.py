@@ -52,7 +52,7 @@ class Conv2dReLU(nn.Module):
 
         layers = [
             nn.Conv2d(in_channels, out_channels, kernel_size,
-                              stride=stride, padding=padding, bias=not (use_batchnorm)),
+                      stride=stride, padding=padding, bias=not (use_batchnorm)),
             nn.ReLU(inplace=True),
         ]
 
@@ -270,6 +270,7 @@ resnet_encoders = {
 
 encoders = {}
 encoders.update(resnet_encoders)
+
 
 def get_encoder(name, encoder_weights=None):
     Encoder = encoders[name]['encoder']

@@ -4,6 +4,7 @@ from .unet import Unet
 encoder_weights_collection = [('random', None), 'imagenet']
 encoder_name_collection = ['resnet34', 'resnet50', 'resnet101']
 
+
 class UNet(Model):
     """Unet is a fully convolution neural network for image semantic segmentation
     """
