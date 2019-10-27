@@ -1,5 +1,5 @@
 from featurize_jupyterlab.core import Task, BasicModule, DataflowModule
-from featurize_jupyterlab import task_env as env
+from featurize_jupyterlab.task import env
 import minetorch
 
 

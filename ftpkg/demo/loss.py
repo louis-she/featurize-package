@@ -2,7 +2,7 @@ from featurize_jupyterlab.core import Loss
 import torch.nn.functional as F
 
 
-class nll_loss(Loss):
+class NllLoss(Loss):
     """Simple wrap of PyTorch's nll_loss
     """
 
