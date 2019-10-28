@@ -1,4 +1,5 @@
 from featurize_jupyterlab.core import Dataset, Option
+from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 
@@ -9,6 +10,6 @@ class MNISTDataset(Dataset):
 
     def __call__(self):
         return (
-            datasets.MNIST(self.fold, download=True, train=True, transform=transforms.ToTensor()),
-            datasets.MNIST(self.fold, download=True, train=False, transform=transforms.ToTensor())
+            DataLoader(dataset=datasets.MNIST(self.fold, download=True, train=True, transform=transforms.ToTensor()), batch_size=128),
+            DataLoader(dataset=datasets.MNIST(self.fold, download=True, train=False, transform=transforms.ToTensor()), batch_size=128)
         )

@@ -6,7 +6,5 @@ class NllLoss(Loss):
     """Simple wrap of PyTorch's nll_loss
     """
 
-    def __call__(self, data):
-        image, target = data
-        output = self.trainer.model(image)
-        return F.nll_loss(output, target)
+    def __call__(self):
+        return F.nll_loss
