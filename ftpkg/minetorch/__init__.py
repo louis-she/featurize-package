@@ -17,6 +17,9 @@ class CorePlugin():
         env.rpc.add_point('train_epoch_loss', payload['epoch'], payload['train_loss'])
         env.rpc.add_point('val_epoch_loss', payload['epoch'], payload['val_loss'])
 
+    def after_checkpoint_persisted(self, payload, trainer):
+        env.rpc.add_file(payload['modelpath'])
+
     def after_train_iteration_end(self, payload, trainer):
         env.rpc.add_point('train_iteration_loss', payload['iteration'], payload['loss'])
 
@@ -48,7 +51,8 @@ class Minetorch(Task):
             loss_func=self.loss,
             drawer=None,
             logger=env.logger,
-            plugins=[CorePlugin()]
+            plugins=[CorePlugin()],
+            trival=True
         )
 
         try:
