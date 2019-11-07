@@ -45,11 +45,11 @@ def prepare_datasets(folder):
     if os.path.isfile(folder / 'train_processed.csv'):
         return
 
-    os.environ['KAGGLE_USERNAME'] = 'snaker'
-    os.environ['KAGGLE_KEY'] = 'fa14a05cbcc69c74d8c98ff91c8385a8'
+    os.environ['KAGGLE_USERNAME'] = 'pengbo0054'
+    os.environ['KAGGLE_KEY'] = 'fcabd994e7e108759771ac7f3ad3aae1'
     import kaggle
-    kaggle.api.competition_download_files('severstal-steel-defect-detection', folder, False, False)
-    with zipfile.ZipFile(folder / 'severstal-steel-defect-detection.zip', 'r') as zip_ref:
+    kaggle.api.competition_download_files('rsna-intracranial-hemorrhage-detection', folder, False, False)
+    with zipfile.ZipFile(folder / 'rsna-intracranial-hemorrhage-detection.zip', 'r') as zip_ref:
         zip_ref.extractall(folder)
     for category in ('train', 'test'):
         images_dir = folder / category
@@ -57,14 +57,14 @@ def prepare_datasets(folder):
             os.mkdir(images_dir)
         except:
             pass
-        with zipfile.ZipFile(folder / f'{category}_images.zip') as f:
+        with zipfile.ZipFile(folder / f'stage_2_{category}_images.zip') as f:
             f.extractall(images_dir)
 
     gen_processed_csv(folder)
 
 
 def gen_processed_csv(folder):
-    a = pd.read_csv(folder / 'train.csv')
+    a = pd.read_csv(folder / 'stage_2_train.csv')
     processed_csv_file = folder / 'train_processed.csv'
     if os.path.isfile(processed_csv_file):
         return
