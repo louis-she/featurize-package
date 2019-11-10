@@ -3,6 +3,10 @@ from featurize_jupyterlab.task import env
 import minetorch
 
 
+class MixinMeta():
+    namespace = 'minetorch'
+
+
 class CorePlugin():
     """The Minetorch Trainer can be runned independently.
     This plugin activate Trainer with the ability to communicate with the
@@ -24,7 +28,7 @@ class CorePlugin():
         env.rpc.add_point('train_iteration_loss', payload['iteration'], payload['loss'])
 
 
-class Minetorch(Task):
+class Minetorch(Task, MixinMeta):
 
     # create module
     train_dataloader = DataflowModule(name='Train Dataloader', component_types=['Dataflow'], multiple=True, required=False)

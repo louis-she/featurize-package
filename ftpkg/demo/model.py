@@ -1,6 +1,7 @@
 from featurize_jupyterlab.core import Model
 from torch import nn
 import torch.nn.functional as F
+from torchvision.models import resnet50
 
 
 class Net(nn.Module):
