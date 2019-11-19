@@ -7,24 +7,24 @@ class MixinMeta():
     namespace = 'minetorch'
 
 
-class CorePlugin():
+class CorePlugin(minetorch.Plugin):
     """The Minetorch Trainer can be runned independently.
     This plugin activate Trainer with the ability to communicate with the
     Minetorch Server with some basic data collection such as loss.
     """
-    def after_init(self, payload, trainer):
+    def after_init(self, payload):
         env.rpc.create_graph('train_epoch_loss')
         env.rpc.create_graph('val_epoch_loss')
         env.rpc.create_graph('train_iteration_loss')
 
-    def after_epoch_end(self, payload, trainer):
+    def after_epoch_end(self, payload):
         env.rpc.add_point('train_epoch_loss', payload['epoch'], payload['train_loss'])
         env.rpc.add_point('val_epoch_loss', payload['epoch'], payload['val_loss'])
 
-    def after_checkpoint_persisted(self, payload, trainer):
+    def after_checkpoint_persisted(self, payload):
         env.rpc.add_file(payload['modelpath'])
 
-    def after_train_iteration_end(self, payload, trainer):
+    def after_train_iteration_end(self, payload):
         env.rpc.add_point('train_iteration_loss', payload['iteration'], payload['loss'])
 
 
@@ -46,7 +46,7 @@ class Minetorch(Task, MixinMeta):
     def __call__(self):
         train_dataset, val_dataset = self.dataset
 
-        trainer = minetorch.Trainer(
+        miner = minetorch.Miner(
             alchemistic_directory='./log',
             model=self.model,
             optimizer=self.optimizer,
@@ -55,11 +55,10 @@ class Minetorch(Task, MixinMeta):
             loss_func=self.loss,
             drawer=None,
             logger=env.logger,
-            plugins=[CorePlugin()],
-            trival=True
+            plugins=[CorePlugin()]
         )
 
         try:
-            trainer.train()
+            miner.train()
         except Exception as e:
             env.logger.exception(f'unexpected error in training process: {e}')

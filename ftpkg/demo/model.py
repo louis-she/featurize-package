@@ -24,6 +24,8 @@ class Net(nn.Module):
 
 
 class SmallModel(Model):
+    """A small net for demo
+    """
 
     def __call__(self):
         return Net()
