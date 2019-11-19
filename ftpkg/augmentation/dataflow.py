@@ -1,6 +1,9 @@
-266b6791e
 # DualImageTransformation 
 # Spatial-level transforms for both images, masks, bbox and keypoints
+import albumentations.augmentations.transforms as albu
+
+from featurize_jupyterlab.core import Option
+from featurize_jupyterlab.transform import BasicImageTransformation, DualImageTransformation
 
 class CenterCrop(DualImageTransformation):
     """
@@ -618,8 +621,8 @@ class RGBShift(BasicImageTransformation):
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     r_shift_limit  = Option(type='number', default=20, help='Range for changing values for the red channel. If r_shift_limit is a single int, the range will be (-r_shift_limit, r_shift_limit). Default: (-20, 20).')
-    g_shift_limit  = Option(type='number', default=20, help='Range for changing values for the green channel. If g_shift_limit is a single int, the range will be (-g_shift_limit, g_shift_limit). Default: (-20, 20).'')
-    b_shift_limit  = Option(type='number', default=20, help='Range for changing values for the blue channel. If b_shift_limit is a single int, the range will be (-b_shift_limit, b_shift_limit). Default: (-20, 20).'')
+    g_shift_limit  = Option(type='number', default=20, help='Range for changing values for the green channel. If g_shift_limit is a single int, the range will be (-g_shift_limit, g_shift_limit). Default: (-20, 20).')
+    b_shift_limit  = Option(type='number', default=20, help='Range for changing values for the blue channel. If b_shift_limit is a single int, the range will be (-b_shift_limit, b_shift_limit). Default: (-20, 20).')
     def create_aug(self):
         return albu.RGBShift(
             r_shift_limit=20,
