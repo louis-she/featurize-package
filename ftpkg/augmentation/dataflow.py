@@ -1,8 +1,4 @@
-from featurize_jupyterlab.core import Dataflow, Option
-from featurize_jupyterlab.transform import BasicImageTransformation, DualImageTransformation
-import json
-import albumentations as albu
-
+266b6791e
 # DualImageTransformation 
 # Spatial-level transforms for both images, masks, bbox and keypoints
 
@@ -533,7 +529,6 @@ class ImageCompression(BasicImageTransformation):
         return albu.ImageCompression(
             quality_lower=self.quality_lower,
             quality_upper=self.quality_upper,
-            compression_type=<ImageCompressionType.JPEG: 0>,
             always_apply=False,
             p=self.probability
             )
