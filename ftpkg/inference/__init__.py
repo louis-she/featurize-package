@@ -29,29 +29,30 @@ class CorePlugin(minetorch.Plugin):
 
 
 
-class Minetorch(Task, MixinMeta):
+class Inference(Task, MixinMeta):
     uploaded_images = Option(type='upload')
     image_height = Option(type='number', required=True)
     image_width = Option(type='number', required=True)
     transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
     model = BasicModule(name='Model', component_types=['Model'])
     output_activation = Option(name='activation', type='collection', default='None', collection=[['None', 'sigmoid', 'softmax']])
-    # create module
-    train_dataloader = DataflowModule(name='Train Dataloader', component_types=['Dataflow'], multiple=True, required=False)
-    val_dataloader = DataflowModule(name='Validation Dataloader', component_types=['Dataflow'], multiple=True, required=False)
-    dataset = BasicModule(name='Dataset', component_types=['Dataset'])
-    model = BasicModule(name='Model', component_types=['Model'])
-    loss = BasicModule(name='Loss', component_types=['Loss'])
-    metrics = BasicModule(name='Metirc', component_types=['Metric'], required=False)
-    optimizer = BasicModule(name='Optimizer', component_types=['Optimizer'])
-
-    # create dependencies
-    optimizer.add_dependency(model)
-    dataset.add_dependency(train_dataloader, val_dataloader)
 
     def __call__(self):
         inference_images = [cv2.imread(img for img in self.uploaded_images)]
         inputs = [self.transform(image) for image in inference_images)]
         outputs = [self.model(input.unsqueeze(0)).squeeze() for input in inputs]
-        if self.output_activation == 'sigmoid':
-            torch.
+        if self.output_activation == 'None':
+            results = outputs
+        elif self.output_activation == 'sigmoid':
+            results = [torch.sigmoid(output) for output in outputs]
+        elif self.output_activation == 'softmax':
+            results = [torch.nn.Softmax(dim=0)(output) for output in outputs]
+        else:
+            env.logger.exception(f'unexpected error in inferencing process.')
+        fnames = [i.split('/')[-1] for i in self.uploaded_images]
+        tmp = []
+        for fname, result in zip(fnames, results):
+            tmp.append((fname,result))
+        df = pd.DataFrame(tmp, columns=['fname', 'predictions'])
+        df.to_csv('./submission.csv', index=False)
+        env.rpc.add_file('./submission.csv')
