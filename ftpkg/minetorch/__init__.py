@@ -1,4 +1,4 @@
-from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
+from featurize_jupyterlab.core import Task, BasicModule, DataflowModule
 from featurize_jupyterlab.task import env
 import minetorch
 
@@ -28,14 +28,8 @@ class CorePlugin(minetorch.Plugin):
         env.rpc.add_point('train_iteration_loss', payload['iteration'], payload['loss'])
 
 
-
 class Minetorch(Task, MixinMeta):
-    uploaded_images = Option(type='upload')
-    image_height = Option(type='number', required=True)
-    image_width = Option(type='number', required=True)
-    transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
-    model = BasicModule(name='Model', component_types=['Model'])
-    output_activation = Option(name='activation', type='collection', default='None', collection=[['None', 'sigmoid', 'softmax']])
+
     # create module
     train_dataloader = DataflowModule(name='Train Dataloader', component_types=['Dataflow'], multiple=True, required=False)
     val_dataloader = DataflowModule(name='Validation Dataloader', component_types=['Dataflow'], multiple=True, required=False)
@@ -50,8 +44,21 @@ class Minetorch(Task, MixinMeta):
     dataset.add_dependency(train_dataloader, val_dataloader)
 
     def __call__(self):
-        inference_images = [cv2.imread(img for img in self.uploaded_images)]
-        inputs = [self.transform(image) for image in inference_images)]
-        outputs = [self.model(input.unsqueeze(0)).squeeze() for input in inputs]
-        if self.output_activation == 'sigmoid':
-            torch.
+        train_dataset, val_dataset = self.dataset
+
+        miner = minetorch.Miner(
+            alchemistic_directory='./log',
+            model=self.model,
+            optimizer=self.optimizer,
+            train_dataloader=train_dataset,
+            val_dataloader=val_dataset,
+            loss_func=self.loss,
+            drawer=None,
+            logger=env.logger,
+            plugins=[CorePlugin()]
+        )
+
+        try:
+            miner.train()
+        except Exception as e:
+            env.logger.exception(f'unexpected error in training process: {e}')
