@@ -39,7 +39,7 @@ class Inference(Task, MixinMeta):
 
     def __call__(self):
         inference_images = [cv2.imread(img for img in self.uploaded_images)]
-        inputs = [self.transform(image) for image in inference_images)]
+        inputs = [self.transform(image) for image in inference_images]
         outputs = [self.model(input.unsqueeze(0)).squeeze() for input in inputs]
         if self.output_activation == 'None':
             results = outputs
