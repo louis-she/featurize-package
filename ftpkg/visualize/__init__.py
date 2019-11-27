@@ -34,7 +34,7 @@ class MixinMeta():
 
 class Visualize(Task, MixinMeta):
     uploaded_images = Option(type='uploader')
-    output_activation = Option(name='activation', type='collection', default='None', collection=[['None', 'sigmoid', 'softmax']])
+    output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
 
     transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
     model = BasicModule(name='Model', component_types=['Model'])
