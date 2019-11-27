@@ -8,7 +8,7 @@ class MixinMeta():
 
 
 class Inference(Task, MixinMeta):
-    output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
+    output_activation = Option(name='activation', type='collection', default='None', collection=[['None', 'sigmoid', 'softmax']])
     pixel_threshold = Option(name='Pixel threshold', type='number', default='0.5')
     dataset = BasicModule(name='Dataset', component_types=['Dataset'])
     transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
@@ -21,7 +21,7 @@ class Inference(Task, MixinMeta):
         runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
         runs[1::2] -= runs[::2]
         return ' '.join(str(x) for x in runs)
-   
+    
     def __call__(self):
         fnames = [i.split('/')[-1] for i in self.uploaded_images]
         inference_images = self.dataset
@@ -38,12 +38,19 @@ class Inference(Task, MixinMeta):
         else:
             env.logger.exception(f'unexpected error in inferencing process.')
         
-        for idx, (fname, result) in enumerate(zip(fnames, results)):
-            fig.add_subplot(1, 1, 1)
-            img = cv2.imread(self.uploaded_images[idx])
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            mask = result > pixel_threshold
-            img[mask==1,0] = 128
-            plt.imshow(img)
-            plt.savefig('./test.png')
-            env.rpc.add_file('./submission.csv')
+        encoded_masks = []
+        for fname, result in zip(fnames, results):
+            encoded_mask = []
+            encoded_mask.append(fname)
+            for i, mask in enumerate(result):
+                encoded_mask.append(mask2rle(mask, self.pixel_threshold))
+            encoded_masks.append(encoded_mask)
+        
+        columns = []
+        columns.append('image_names')
+        for i in range(classes):
+            columns.append(f'class_{i+1}')
+        
+        df = pd.DataFrame(encoded_masks, columns=columns)
+        df.to_csv('./submission.csv', index=False)
+        env.rpc.add_file('./submission.csv')
