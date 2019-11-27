@@ -6,7 +6,7 @@ import segmentation_models_pytorch as smp
 
 encoder_weights_collection = [('random', None), 'imagenet']
 encoder_name_collection = ['resnet34', 'resnet50', 'resnet101']
-activation_collection['None', 'sigmoid', 'softmax']
+activation_collection = ['None', 'sigmoid', 'softmax']
 
 encoder_name = Option(default='resnet34', type='collection', collection=encoder_name_collection)
 encoder_weights = Option(default='imagenet', type='collection', collection=encoder_weights_collection)
