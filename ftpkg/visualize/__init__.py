@@ -38,7 +38,7 @@ class Visualize(Task, MixinMeta):
 
     transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
     model = BasicModule(name='Model', component_types=['Model'])
-    
+
     def __call__(self):
         fnames = [i.split('/')[-1] for i in self.uploaded_images]
         uploaded_images_arrays = [cv2.imread(img) for img in self.uploaded_images]
