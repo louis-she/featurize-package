@@ -1,4 +1,4 @@
-from featurize_jupyterlab.core import Task, BasicModule, DataflowModule
+from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
 from featurize_jupyterlab.task import env
 import minetorch
 
@@ -22,14 +22,13 @@ class CorePlugin(minetorch.Plugin):
         env.rpc.add_point('val_epoch_loss', payload['epoch'], payload['val_loss'])
 
     def after_checkpoint_persisted(self, payload):
-        env.rpc.add_file(payload['modelpath'])
+        env.rpc.add_checkpoint(payload['modelpath'])
 
     def after_train_iteration_end(self, payload):
         env.rpc.add_point('train_iteration_loss', payload['iteration'], payload['loss'])
 
 
 class Minetorch(Task, MixinMeta):
-
     # create module
     train_dataloader = DataflowModule(name='Train Dataloader', component_types=['Dataflow'], multiple=True, required=False)
     val_dataloader = DataflowModule(name='Validation Dataloader', component_types=['Dataflow'], multiple=True, required=False)
