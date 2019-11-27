@@ -1,4 +1,4 @@
-from featurize_jupyterlab.core import Model
+from featurize_jupyterlab.core import Model, Option
 from torch import nn
 import torch.nn.functional as F
 from torchvision.models import resnet50
