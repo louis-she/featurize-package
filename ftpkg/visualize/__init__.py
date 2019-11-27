@@ -32,7 +32,7 @@ class MixinMeta():
     namespace = 'visualize'
 
 
-class Inference(Task, MixinMeta):
+class Visualize(Task, MixinMeta):
     uploaded_images = Option(type='uploader')
     output_activation = Option(name='activation', type='collection', default='None', collection=[['None', 'sigmoid', 'softmax']])
 
