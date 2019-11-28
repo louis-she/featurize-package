@@ -56,6 +56,6 @@ class SegmentationDataset(Dataset):
 
     def __call__(self):
         return (
-            DataLoader(dataset=TrochSegDataset(annotation=self.annotations, data_folder=self.fold, self.train_augmentations), batch_size=self.batch_size),
-            DataLoader(dataset=TrochSegDataset(annotation=self.annotations, data_folder=self.fold, self.val_augmentations), batch_size=self.batch_size)
+            DataLoader(dataset=TrochSegDataset(annotation=self.annotations, data_folder=self.fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+            DataLoader(dataset=TrochSegDataset(annotation=self.annotations, data_folder=self.fold, transforms=self.val_augmentations), batch_size=self.batch_size)
         )
