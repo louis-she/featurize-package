@@ -85,14 +85,13 @@ class ClassificationSampleInference(Task, MixinMeta):
             outputs = [F.sigmoid(logit) for logit in logits]
         else:
             outputs = logits
-        df = pd.DataFrame(columns=['Image Name', 'Image Preview', *[f'Class {klass} score' for klass in range(len(outputs[0]))]])
-
+        df = pd.DataFrame(columns=['Image Name', 'Image Preview (ImageBase64)', *[f'Class {klass} score' for klass in range(len(outputs[0]))]])
         for i, image_path in enumerate(self.input_images):
             image_name = image_path.split('/')[-1]
             base64encode = image_base64(image_path)
             row_data = [image_name, base64encode]
             for klass, klass_score in enumerate(outputs[i]):
-                row_data.append(klass_score)
+                row_data.append(klass_score.item())
             df.loc[i] = row_data
-        df.to_csv('./output.csv')
+        df.to_csv('./output.csv', index=False)
         self.env.rpc.add_file('./output.csv')
