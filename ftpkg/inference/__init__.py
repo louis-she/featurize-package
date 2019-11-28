@@ -8,7 +8,7 @@ class MixinMeta():
 
 
 class Inference(Task, MixinMeta):
-    output_activation = Option(name='activation', type='collection', default='None', collection=[['None', 'sigmoid', 'softmax']])
+    output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
     pixel_threshold = Option(name='Pixel threshold', type='number', default='0.5')
     dataset = BasicModule(name='Dataset', component_types=['Dataset'])
     transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
