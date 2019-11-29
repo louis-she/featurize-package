@@ -1,7 +1,7 @@
-from featurize_jupyterlab.core import Model
-from torch import nn
 import torch.nn.functional as F
-from torchvision.models import resnet50
+from torch import nn
+
+from featurize_jupyterlab.core import Model
 
 
 class Net(nn.Module):
@@ -27,5 +27,5 @@ class SmallModel(Model):
     """A small net for demo
     """
 
-    def __call__(self):
+    def create_model(self):
         return Net()

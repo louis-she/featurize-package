@@ -1,6 +1,9 @@
-# DualImageTransformation 
+# DualImageTransformation
 # Spatial-level transforms for both images, masks, bbox and keypoints
 import albumentations.augmentations.transforms as albu
+import json
+import cv2
+import torchvision.transforms as transform
 
 from featurize_jupyterlab.core import Option
 from featurize_jupyterlab.transform import BasicImageTransformation, DualImageTransformation
@@ -43,17 +46,17 @@ class CropNonEmptyMaskIfExists(DualImageTransformation):
             self.ignore_values = [0]
         else:
             self.ignore_values = None
-        
+
         if isinstance(a,int):
             self.ignore_channels = self.ignore_channels - 1
         else:
             self.ignore_channels = None
-        
+
         return albu.CenterCrop(
-            self.height, 
-            self.width, 
-            ignore_values=self.ignore_values, 
-            ignore_channels=self.ignore_channels, 
+            self.height,
+            self.width,
+            ignore_values=self.ignore_values,
+            ignore_channels=self.ignore_channels,
             p=self.probability)
 
 
@@ -82,14 +85,14 @@ class IAAAffine(DualImageTransformation):
 
     def create_aug(self):
         return albu.IAAAffine(
-            scale=1.0, 
-            translate_percent=None, 
-            translate_px=None, 
-            rotate=0.0, shear=0.0, 
-            order=1, 
-            cval=0, 
-            mode='reflect', 
-            always_apply=False, 
+            scale=1.0,
+            translate_percent=None,
+            translate_px=None,
+            rotate=0.0, shear=0.0,
+            order=1,
+            cval=0,
+            mode='reflect',
+            always_apply=False,
             p=self.probability)
 
 
@@ -100,12 +103,12 @@ class IAACropAndPad(DualImageTransformation):
 
     def create_aug(self):
         return albu.IAACropAndPad(
-            px=None, 
-            percent=None, 
-            pad_mode='constant', 
-            pad_cval=0, 
-            keep_size=True, 
-            always_apply=False, 
+            px=None,
+            percent=None,
+            pad_mode='constant',
+            pad_cval=0,
+            keep_size=True,
+            always_apply=False,
             p=self.probability)
 
 
@@ -131,12 +134,12 @@ class IAAPerspective(DualImageTransformation):
     """
     """
     columns_config = Option(type='string', default='{"image": 0, "mask": 1}', post_process=lambda x: json.loads(x))
-    
+
     def create_aug(self):
         return albu.IAAPerspective(
-            scale=(0.05, 0.1), 
-            keep_size=True, 
-            always_apply=False, 
+            scale=(0.05, 0.1),
+            keep_size=True,
+            always_apply=False,
             p=self.probability)
 
 
@@ -147,13 +150,13 @@ class IAAPiecewiseAffine(DualImageTransformation):
 
     def create_aug(self):
         return albu.IAAPiecewiseAffine(
-            scale=(0.03, 0.05), 
-            nb_rows=4, 
-            nb_cols=4, 
-            order=1, 
-            cval=0, 
-            mode='constant', 
-            always_apply=False, 
+            scale=(0.03, 0.05),
+            nb_rows=4,
+            nb_cols=4,
+            order=1,
+            cval=0,
+            mode='constant',
+            always_apply=False,
             p=self.probability)
 
 
@@ -163,15 +166,15 @@ class PadIfNeeded(DualImageTransformation):
     columns_config = Option(type='string', default='{"image": 0, "mask": 1}', post_process=lambda x: json.loads(x))
     min_height = Option(type='number', help='minimal result image height')
     min_width = Option(type='number', help='minimal result image width')
-    
+
     def create_aug(self):
         return albu.PadIfNeeded(
-            min_height=self.min_height, 
-            min_width=self.min_width, 
-            border_mode=4, 
-            value=None, 
-            mask_value=None, 
-            always_apply=False, 
+            min_height=self.min_height,
+            min_width=self.min_width,
+            border_mode=4,
+            value=None,
+            mask_value=None,
+            always_apply=False,
             p=self.probability
             )
 
@@ -182,7 +185,7 @@ class RandomCrop(DualImageTransformation):
     columns_config = Option(type='string', default='{"image": 0, "mask": 1}', post_process=lambda x: json.loads(x))
     width = Option(type='number', help='width to crop')
     height = Option(type='number', help='height to crop')
-    
+
     def create_aug(self):
         return albu.RandomCrop(self.height, self.width, p=self.probability)
 
@@ -192,7 +195,7 @@ class RandomCropNearBBox(DualImageTransformation):
     """
     columns_config = Option(type='string', default='{"image": 0, "mask": 1}', post_process=lambda x: json.loads(x))
     max_part_shift = Option(type='number', help='float value in (0.0, 1.0) range')
-    
+
     def create_aug(self):
         return albu.RandomCropNearBBox(
             max_part_shift=self.max_part_shift,
@@ -210,12 +213,12 @@ class RandomResizedCrop(DualImageTransformation):
 
     def create_aug(self):
         return albu.RandomResizedCrop(
-            height=self.height, 
-            weidth=self.width, 
-            scale=(0.08, 1.0), 
-            ratio=(0.75, 1.3333333333333333), 
-            interpolation=1, 
-            always_apply=False, 
+            height=self.height,
+            weidth=self.width,
+            scale=(0.08, 1.0),
+            ratio=(0.75, 1.3333333333333333),
+            interpolation=1,
+            always_apply=False,
             p=self.probability
             )
 
@@ -241,11 +244,11 @@ class RandomSizedCrop(DualImageTransformation):
     def create_aug(self):
         return albu.RandomSizedCrop(
             min_max_height=(self.min_height, self.max_height),
-            height=self.height, 
-            width=self.width, 
-            w2h_ratio=1.0, 
-            interpolation=1, 
-            always_apply=False, 
+            height=self.height,
+            width=self.width,
+            w2h_ratio=1.0,
+            interpolation=1,
+            always_apply=False,
             p=self.probability
             )
 
@@ -283,7 +286,7 @@ class VerticalFlip(DualImageTransformation):
 # Pixel-level transforms for images only
 
 class Blur(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     blur_limit = Option(type='number', default=7, help='maximum kernel size for blurring the input image.')
@@ -296,7 +299,7 @@ class Blur(BasicImageTransformation):
 
 
 class Blur(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     clip_limit = Option(type='number', default=4.0, help='upper threshold value for contrast limiting.')
@@ -308,9 +311,9 @@ class Blur(BasicImageTransformation):
             p=self.probability
             )
 
-            
+
 class ChannelDropout(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     channel_drop = Option(type='number', default=1, help='upper limit for channels to be drop')
@@ -324,7 +327,7 @@ class ChannelDropout(BasicImageTransformation):
 
 
 class ChannelShuffle(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     def create_aug(self):
@@ -332,7 +335,7 @@ class ChannelShuffle(BasicImageTransformation):
 
 
 class CoarseDropout(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     max_holes = Option(type='number', default=8, help='Maximum number of regions to zero out.')
@@ -353,7 +356,7 @@ class CoarseDropout(BasicImageTransformation):
 
 
 class Cutout(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     num_holes = Option(type='number', default=8, help='Number of regions to zero out.')
@@ -371,7 +374,7 @@ class Cutout(BasicImageTransformation):
 
 
 class Downscale(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     scale_min = Option(type='number', default=0.25, help='Lower bound on the image scale. Should be < 1.')
@@ -387,7 +390,7 @@ class Downscale(BasicImageTransformation):
 
 
 class Equalize(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     def create_aug(self):
@@ -402,7 +405,7 @@ class Equalize(BasicImageTransformation):
 
 
 class GaussNoise(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     lower_limit = Option(type='number', default=10.0, help='Variance lower limit for noise.')
@@ -418,7 +421,7 @@ class GaussNoise(BasicImageTransformation):
 
 
 class GaussianBlur(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     blur_limit = Option(type='number', default=7, help='Maximum Gaussian kernel size for blurring the input image.')
@@ -431,7 +434,7 @@ class GaussianBlur(BasicImageTransformation):
 
 
 class HueSaturationValue(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     hue_shift_limit = Option(type='number', default=20, help='Range for changing hue.(-hue_shift_limit, hue_shift_limit)')
@@ -448,7 +451,7 @@ class HueSaturationValue(BasicImageTransformation):
 
 
 class IAAAdditiveGaussianNoise(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     loc = Option(type='number', default=0, help='Mean of the normal distribution that generates the noise.')
@@ -465,7 +468,7 @@ class IAAAdditiveGaussianNoise(BasicImageTransformation):
 
 
 class IAAEmboss(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     alpha = Option(type='number', default=(0.2, 0.5), help='Range to choose the visibility of the embossed image. At 0, only the original image is visible,at 1.0 only its embossed version is visible.')
@@ -480,7 +483,7 @@ class IAAEmboss(BasicImageTransformation):
 
 
 class IAASharpen(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     alpha = Option(type='number', default=(0.2, 0.5), help='Range to choose the visibility of the embossed image. At 0, only the original image is visible,at 1.0 only its embossed version is visible.')
@@ -495,7 +498,7 @@ class IAASharpen(BasicImageTransformation):
 
 
 class IAASuperpixels(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     p_replace = Option(type='number', default=0.1, help='Defines the probability of any superpixel area being replaced by the superpixel, i.e. by the average pixel color within its area. ')
@@ -510,7 +513,7 @@ class IAASuperpixels(BasicImageTransformation):
 
 
 class ISONoise(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     def create_aug(self):
@@ -523,7 +526,7 @@ class ISONoise(BasicImageTransformation):
 
 
 class ImageCompression(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     quality_lower = Option(type='number', default=99, help='Lower bound on the image quality. ')
@@ -538,7 +541,7 @@ class ImageCompression(BasicImageTransformation):
 
 
 class InvertImg(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     def create_aug(self):
@@ -549,7 +552,7 @@ class InvertImg(BasicImageTransformation):
 
 
 class JpegCompression(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     quality_lower  = Option(type='number', default=99, help='Lower bound on the jpeg quality.')
@@ -564,7 +567,7 @@ class JpegCompression(BasicImageTransformation):
 
 
 class MedianBlur(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     blur_limit  = Option(type='number', default=7, help='Maximum aperture linear size for blurring the input image. ')
@@ -577,7 +580,7 @@ class MedianBlur(BasicImageTransformation):
 
 
 class MotionBlur(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     blur_limit  = Option(type='number', default=7, help='Maximum kernel size for blurring the input image. ')
@@ -590,7 +593,7 @@ class MotionBlur(BasicImageTransformation):
 
 
 class Normalize(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     normalize_type = Option(type='collection', default='imagenet', collection=[['imagenet', 'imagenet']])
@@ -601,11 +604,15 @@ class Normalize(BasicImageTransformation):
                 'mean': (0.485, 0.456, 0.406),
                 'std': (0.229, 0.224, 0.225)
             }
+        else:
+            params = {
+
+            }
         return albu.Normalize(**params, p=self.probability)
 
 
 class Posterize(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     def create_aug(self):
@@ -617,7 +624,7 @@ class Posterize(BasicImageTransformation):
 
 
 class RGBShift(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     r_shift_limit  = Option(type='number', default=20, help='Range for changing values for the red channel. If r_shift_limit is a single int, the range will be (-r_shift_limit, r_shift_limit). Default: (-20, 20).')
@@ -634,7 +641,7 @@ class RGBShift(BasicImageTransformation):
 
 
 class RandomBrightness(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     limit = Option(type='number', default=0.2, help='Factor range for changing brightness. If limit is a single float, the range will be (-limit, limit). Default: (-0.2, 0.2).')
@@ -647,7 +654,7 @@ class RandomBrightness(BasicImageTransformation):
 
 
 class RandomContrast(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     limit = Option(type='number', default=0.2, help='Factor range for changing contrast. If limit is a single float, the range will be (-limit, limit). Default: (-0.2, 0.2).')
@@ -660,12 +667,12 @@ class RandomContrast(BasicImageTransformation):
 
 
 class RandomFog(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     fog_coef_lower = Option(type='number', default=0.3, help='Lower limit for fog intensity coefficient. ')
     fog_coef_upper = Option(type='number', default=1, help='Upper limit for fog intensity coefficient. ')
-    alpha_coef = Option(type='number', default=0.08, help='Transparency of the fog circles. ')    
+    alpha_coef = Option(type='number', default=0.08, help='Transparency of the fog circles. ')
     def create_aug(self):
         return albu.RandomFog(
             fog_coef_lower=0.3,
@@ -677,21 +684,35 @@ class RandomFog(BasicImageTransformation):
 
 
 class RandomGamma(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
     def create_aug(self):
         return albu.RandomGamma(
-            gamma_limit=(80, 120), 
-            eps=1e-07, 
-            always_apply=False, 
+            gamma_limit=(80, 120),
+            eps=1e-07,
+            always_apply=False,
             p=self.probability
             )
 
 
 class ToGray(BasicImageTransformation):
-    """ 
+    """
     """
     columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
+
     def create_aug(self):
-        return albu.ToGray(always_apply=False, p=self.probability)
+        def _transform(image):
+            return {'image': cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)}
+        return _transform
+
+
+class ToTensor(BasicImageTransformation):
+    columns_config = Option(type='string', default='[0]', post_process=lambda x: json.loads(x))
+
+    def create_aug(self):
+        to_tensor = transform.ToTensor()
+
+        def _transform(image):
+            return {'image': to_tensor(image)}
+        return _transform
