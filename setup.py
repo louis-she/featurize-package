@@ -4,7 +4,7 @@ import setuptools
 setuptools.setup(
     name='featurize-package',
     description='Official packages for featurize.',
-    version='0.0.18',
+    version='0.0.20',
     packages=setuptools.find_packages(),
     url="https://github.com/louis-she/featurize-package",
     author='louis',
@@ -13,7 +13,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         'featurize-jupyterlab',
-        'torchvision>=0.4.0',
+        'torchvision',
         'albumentations',
         'torch',
         'pandas',
