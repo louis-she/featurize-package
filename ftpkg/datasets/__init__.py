@@ -46,7 +46,8 @@ class TrochSegDataset(TorchDataset):
 
 
 class SegmentationDataset(Dataset):
-
+    """This is a segmentation dataset preparing data from annotations and data directory
+    """
     fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")
     annotations = Option(type='uploader', help='You may upload a csv file with columns=["image_names", "class_1", "class_2", ..., "class_n"]')
     batch_size = Option(type='number')
