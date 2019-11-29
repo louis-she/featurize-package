@@ -1,11 +1,11 @@
-from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
-from featurize_jupyterlab.task import env
-from featurize_jupyterlab.utils import image_base64
-import minetorch
-import torch.nn.functional as F
-import torch
 import cv2
+import minetorch
 import pandas as pd
+import torch.nn.functional as F
+
+from featurize_jupyterlab.core import BasicModule, DataflowModule, Option, Task
+from featurize_jupyterlab.task import env
+from featurize_jupyterlab.utils import get_transform_func, image_base64
 
 
 class MixinMeta():
@@ -35,8 +35,8 @@ class CorePlugin(minetorch.Plugin):
 
 class Minetorch(Task, MixinMeta):
     # create module
-    train_dataloader = DataflowModule(name='Train Dataloader', component_types=['Dataflow'], multiple=True, required=False)
-    val_dataloader = DataflowModule(name='Validation Dataloader', component_types=['Dataflow'], multiple=True, required=False)
+    train_transform = DataflowModule(name='Train Transform', component_types=['Dataflow'], multiple=True, required=False)
+    val_transform = DataflowModule(name='Validation Transform', component_types=['Dataflow'], multiple=True, required=False)
     dataset = BasicModule(name='Dataset', component_types=['Dataset'])
     model = BasicModule(name='Model', component_types=['Model'])
     loss = BasicModule(name='Loss', component_types=['Loss'])
@@ -45,7 +45,7 @@ class Minetorch(Task, MixinMeta):
 
     # create dependencies
     optimizer.add_dependency(model)
-    dataset.add_dependency(train_dataloader, val_dataloader)
+    dataset.add_dependency(train_transform, val_transform)
 
     def __call__(self):
         train_dataset, val_dataset = self.dataset
@@ -78,13 +78,18 @@ class ClassificationSampleInference(Task, MixinMeta):
     def __call__(self):
         input_images = [cv2.imread(input_image) for input_image in self.input_images]
         inputs = [self.transform([input_image])[0] for input_image in input_images]
-        logits = [self.model(torch.Tensor(input).unsqueeze(0)).squeeze() for input in inputs]
+
+        transform = get_transform_func(inputs[0])
+
+        logits = [self.model(transform(input)).squeeze() for input in inputs]
+
         if self.output_activation == 'softmax':
             outputs = [F.softmax(logit) for logit in logits]
         elif self.output_activation == 'sigmoid':
             outputs = [F.sigmoid(logit) for logit in logits]
         else:
             outputs = logits
+
         df = pd.DataFrame(columns=['Image Name', 'Image Preview (ImageBase64)', *[f'Class {klass} score' for klass in range(len(outputs[0]))]])
         for i, image_path in enumerate(self.input_images):
             image_name = image_path.split('/')[-1]
