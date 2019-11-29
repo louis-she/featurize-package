@@ -30,7 +30,7 @@ class SegmentationModel(Model):
     activation = Option(default='None', type='collection', collection=activation_collection)
     model_architecture = Option(defalt='Unet', type='collection', collection=architecture_collection)
     
-    def __call__(self):
+    def create_model(self):
         kwargs = {
             'encoder_name': self.encoder_name,
             'encoder_weights': self.encoder_weights, 
