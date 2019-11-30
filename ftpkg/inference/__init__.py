@@ -1,7 +1,7 @@
 from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
 from featurize_jupyterlab.task import env
 import minetorch
-
+import pandas as pd
 
 class MixinMeta():
     namespace = 'inference'
