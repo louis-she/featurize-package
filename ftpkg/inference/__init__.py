@@ -7,7 +7,10 @@ from featurize_jupyterlab.core import BasicModule, DataflowModule, Option, Task
 from featurize_jupyterlab.task import env
 from featurize_jupyterlab.utils import get_transform_func
 
-class ClassificationSampleInference(Task, MixinMeta):
+class MixinMeta():
+    namespace = 'Segmentation Inference'
+
+class SegmentationSampleInference(Task, MixinMeta):
     
     input_images = Option(name='Predicting images', type='uploader')
     output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
