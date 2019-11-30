@@ -37,13 +37,13 @@ class SegmentationModel(Model):
             'classes':self.num_classes, 
             'activation':self.activation
         }
-        if model_architecture == 'Unet':
+        if self.model_architecture == 'Unet':
             model = smp.Unet(**kwargs)
-        elif model_architecture == 'FPN':
+        elif self.model_architecture == 'FPN':
             model = smp.FPN(**kwargs)
-        elif model_architecture == 'Linknet':
+        elif self.model_architecture == 'Linknet':
             model = smp.Linknet(**kwargs)
-        elif model_architecture == 'PSPNet':
+        elif self.model_architecture == 'PSPNet':
             model = smp.Linknet(**kwargs)
         
         model.eval()
