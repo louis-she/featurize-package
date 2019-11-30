@@ -1,18 +1,19 @@
-from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
-from featurize_jupyterlab.task import env
+import cv2
 import minetorch
 import pandas as pd
+import torch.nn.functional as F
 
-class MixinMeta():
-    namespace = 'inference'
+from featurize_jupyterlab.core import BasicModule, DataflowModule, Option, Task
+from featurize_jupyterlab.task import env
+from featurize_jupyterlab.utils import get_transform_func
 
-
-class Inference(Task, MixinMeta):
+class ClassificationSampleInference(Task, MixinMeta):
+    
+    input_images = Option(name='Predicting images', type='uploader')
     output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
-    pixel_threshold = Option(name='Pixel threshold', type='number', default='0.5')
-    dataset = BasicModule(name='Dataset', component_types=['Dataset'])
-    transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
+    transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=True)
     model = BasicModule(name='Model', component_types=['Model'])
+    pixel_threshold = Option(name='Pixel Threshold', type='number', default=0.5)
     
     def mask2rle(image_logits, pixel_threshold):
         img = image_logits > pixel_threshold
@@ -21,36 +22,28 @@ class Inference(Task, MixinMeta):
         runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
         runs[1::2] -= runs[::2]
         return ' '.join(str(x) for x in runs)
-    
-    def __call__(self):
-        fnames = [i.split('/')[-1] for i in self.uploaded_images]
-        inference_images = self.dataset
-        inputs = [self.transform(image) for image in inference_images]
-        outputs = [self.model(input.unsqueeze(0)).squeeze() for input in inputs]
-        classes = outputs[0].shape[0]
 
-        if self.output_activation == 'None':
-            results = outputs
+    def __call__(self):
+        input_images = [cv2.imread(input_image) for input_image in self.input_images]
+        inputs = [self.transform([input_image])[0] for input_image in input_images]
+
+        transform = get_transform_func(inputs[0])
+
+        logits = [self.model(transform(input)).squeeze() for input in inputs]
+
+        if self.output_activation == 'softmax':
+            outputs = [F.softmax(logit) for logit in logits]
         elif self.output_activation == 'sigmoid':
-            results = [torch.sigmoid(output) for output in outputs]
-        elif self.output_activation == 'softmax':
-            results = [torch.nn.Softmax(dim=0)(output) for output in outputs]
+            outputs = [F.sigmoid(logit) for logit in logits]
         else:
-            env.logger.exception(f'unexpected error in inferencing process.')
-        
-        encoded_masks = []
-        for fname, result in zip(fnames, results):
-            encoded_mask = []
-            encoded_mask.append(fname)
-            for i, mask in enumerate(result):
-                encoded_mask.append(mask2rle(mask, self.pixel_threshold))
-            encoded_masks.append(encoded_mask)
-        
-        columns = []
-        columns.append('image_names')
-        for i in range(classes):
-            columns.append(f'class_{i+1}')
-        
-        df = pd.DataFrame(encoded_masks, columns=columns)
-        df.to_csv('./submission.csv', index=False)
-        env.rpc.add_file('./submission.csv')
+            outputs = logits
+
+        df = pd.DataFrame(columns=['Image Name', *[f'Class {klass} score' for klass in range(len(outputs[0]))]])
+        for i, image_path in enumerate(self.input_images):
+            image_name = image_path.split('/')[-1]
+            row_data = [image_name]
+            for klass, output in enumerate(outputs[i]):
+                row_data.append(mask2rle(output, self.pixel_threshold))
+            df.loc[i] = row_data
+        df.to_csv('./output.csv', index=False)
+        self.env.rpc.add_file('./output.csv')
