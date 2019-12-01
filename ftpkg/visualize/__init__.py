@@ -1,5 +1,7 @@
 import minetorch
+import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from featurize_jupyterlab.utils import get_transform_func
 from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
@@ -61,18 +63,17 @@ class Visualize(Task, MixinMeta):
             img = Image.open(image_path)
             img_array = np.array(img)
             patches = []
-            for classes in range(len(results)):
+            for classes in range(len(results[idx])):
                 try:
-                    msk = results[classes]
+                    msk = results[idx][classes]
                 except:
                     msk = np.zeros(shape[1:3])
+                msk = mask2contour(msk.detach().numpy(),width=2)
 
-                msk = mask2contour(msk,width=2)
-
-                img_array[msk==1,0] = colors[i][0]
-                img_array[msk==1,1] = colors[i][1]
-                img_array[msk==1,2] = colors[i][2]
-                patches.append(mpatches.Patch(color=matplotlib.colors.to_rgba(np.array(colors[i])/255), label=classes))
+                img_array[msk==1,0] = colors[classes][0]
+                img_array[msk==1,1] = colors[classes][1]
+                img_array[msk==1,2] = colors[classes][2]
+                patches.append(mpatches.Patch(color=matplotlib.colors.to_rgba(np.array(colors[classes])/255), label=classes))
 
             plt.legend(handles=patches)
             plt.axis('off') 
