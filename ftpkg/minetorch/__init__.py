@@ -7,6 +7,7 @@ from featurize_jupyterlab.core import BasicModule, DataflowModule, Option, Task
 from featurize_jupyterlab.task import env
 from featurize_jupyterlab.utils import get_transform_func, image_base64
 
+PYPI_PACKAGE_NAME = 'featurize-package'
 
 class MixinMeta():
     namespace = 'minetorch'
