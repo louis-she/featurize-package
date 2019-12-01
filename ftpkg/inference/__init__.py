@@ -2,7 +2,7 @@ import cv2
 import minetorch
 import pandas as pd
 import torch.nn.functional as F
-
+import numpy as np
 from featurize_jupyterlab.core import BasicModule, DataflowModule, Option, Task
 from featurize_jupyterlab.task import env
 from featurize_jupyterlab.utils import get_transform_func
@@ -18,7 +18,7 @@ class SegmentationSampleInference(Task, MixinMeta):
     model = BasicModule(name='Model', component_types=['Model'])
     pixel_threshold = Option(name='Pixel Threshold', type='number', default=0.5)
     
-    def mask2rle(image_logits, pixel_threshold):
+    def mask2rle(self, image_logits, pixel_threshold):
         img = image_logits > pixel_threshold
         pixels= img.T.flatten()
         pixels = np.concatenate([[0], pixels, [0]])
@@ -29,9 +29,7 @@ class SegmentationSampleInference(Task, MixinMeta):
     def __call__(self):
         input_images = [cv2.imread(input_image) for input_image in self.input_images]
         inputs = [self.transform([input_image])[0] for input_image in input_images]
-
         transform = get_transform_func(inputs[0])
-
         logits = [self.model(transform(input)).squeeze() for input in inputs]
 
         if self.output_activation == 'softmax':
@@ -46,7 +44,7 @@ class SegmentationSampleInference(Task, MixinMeta):
             image_name = image_path.split('/')[-1]
             row_data = [image_name]
             for klass, output in enumerate(outputs[i]):
-                row_data.append(mask2rle(output, self.pixel_threshold))
+                row_data.append(self.mask2rle(output, self.pixel_threshold))
             df.loc[i] = row_data
         df.to_csv('./output.csv', index=False)
         self.env.rpc.add_file('./output.csv')
