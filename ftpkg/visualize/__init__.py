@@ -1,7 +1,7 @@
 import minetorch
-
+import numpy as np
 import matplotlib.patches as mpatches
-
+from featurize_jupyterlab.utils import get_transform_func
 from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
 from featurize_jupyterlab.task import env
 from PIL import Image, ImageDraw, ImageFont
@@ -42,8 +42,9 @@ class Visualize(Task, MixinMeta):
     def __call__(self):
         fnames = [i.split('/')[-1] for i in self.uploaded_images]
         uploaded_images_arrays = [cv2.imread(img) for img in self.uploaded_images]
-        transformed_arrays = [self.transform(image) for image in uploaded_images_arrays]
-        outputs = [self.model(input.unsqueeze(0)).squeeze() for input in transformed_arrays]
+        transformed_arrays = [self.transform([image])[0] for image in uploaded_images_arrays]
+        transform = get_transform_func(transformed_arrays[0])
+        outputs = [self.model(transform(input)).squeeze() for input in transformed_arrays]
         shape = outputs[0].shape
         if self.output_activation == 'None':
             results = outputs
