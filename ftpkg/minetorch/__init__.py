@@ -97,7 +97,7 @@ class ClassificationSampleInference(Task, MixinMeta):
             base64encode = image_base64(image_path)
             row_data = [image_name, base64encode]
             for klass, klass_score in enumerate(outputs[i]):
-                row_data.append(klass_score.item())
+                row_data.append(round(klass_score.item(), 4))
             df.loc[i] = row_data
         df.to_csv('./output.csv', index=False)
         self.env.rpc.add_file('./output.csv')
