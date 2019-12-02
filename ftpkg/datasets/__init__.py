@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as TorchDataset
 
 
-class TrochSegDataset(TorchDataset):
+class TorchSegDataset(TorchDataset):
     
     def __init__(self, annotation, data_folder, transforms):
         self.df = pd.read_csv(annotation)
