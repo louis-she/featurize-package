@@ -3,9 +3,10 @@ from torch import nn
 import torch.nn.functional as F
 from torchvision.models import resnet50
 import segmentation_models_pytorch as smp
+from efficientnet_pytorch.model import EfficientNet
+import torchvision.models as torchmodels
 
 encoder_weights_collection = [('random', None), 'imagenet']
-activation_collection = ['None', 'sigmoid', 'softmax']
 architecture_collection = ['Unet', 'FPN', 'Linknet', 'PSPNet']
 encoder_name_collection = [
     'densenet121', 'densenet169', 'densenet201', 'densenet161',
@@ -20,22 +21,22 @@ encoder_name_collection = [
     'xception'
     ]
 
-
+efficientnet_collection = [
+    'efficientnet-b0', 'efficientnet-b1', 'efficientnet-b2', 'efficientnet-b3', 'efficientnet-b4', 'efficientnet-b5', 'efficientnet-b6', 'efficientnet-b7'
+]
 
 class SegmentationModel(Model):
 
     encoder_name = Option(default='resnet34', type='collection', collection=encoder_name_collection)
     encoder_weights = Option(default='imagenet', type='collection', collection=encoder_weights_collection)
     num_classes = Option(default=2, type='number', help='class number of mask')
-    activation = Option(default='None', type='collection', collection=activation_collection)
     model_architecture = Option(defalt='Unet', type='collection', collection=architecture_collection)
     
     def create_model(self):
         kwargs = {
             'encoder_name': self.encoder_name,
             'encoder_weights': self.encoder_weights, 
-            'classes':self.num_classes, 
-            'activation':self.activation
+            'classes':self.num_classes
         }
         if self.model_architecture == 'Unet':
             model = smp.Unet(**kwargs)
@@ -45,7 +46,20 @@ class SegmentationModel(Model):
             model = smp.Linknet(**kwargs)
         elif self.model_architecture == 'PSPNet':
             model = smp.Linknet(**kwargs)
-        
-        model.eval()
-        
+                
+        return model
+
+
+class ClassificationModel(Model):
+    
+    encoder_name = Option(default='efficientnet-b0', type='collection', collection=efficientnet_collection)
+    num_classes = Option(default=2, type='number', help='class number of mask')
+    
+    def create_model(self):
+        kwargs = {
+            'model_name': self.encoder_name,
+            'num_classes':self.num_classes, 
+        }
+        model = EfficientNet.from_pretrained(**kwargs)
+                
         return model
