@@ -1,5 +1,6 @@
 import minetorch
 import cv2
+import os
 import numpy as np
 import torch.nn.functional as F
 import matplotlib
@@ -93,7 +94,7 @@ class Visualize(Task, MixinMeta):
             base64encode_processed = image_base64(os.path.join('./images', image_name))
 
             row_data = [image_name, base64encode_origin, base64encode_processed]
-            df.loc[i] = row_data
+            df.loc[idx] = row_data
         df.to_csv('./output.csv', index=False)
         self.env.rpc.add_file('./output.csv')
         
