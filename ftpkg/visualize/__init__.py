@@ -1,11 +1,14 @@
 import minetorch
 import cv2
 import numpy as np
+import torch.nn.functional as F
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from featurize_jupyterlab.utils import get_transform_func
 from featurize_jupyterlab.core import Task, BasicModule, DataflowModule, Option
 from featurize_jupyterlab.task import env
+from featurize_jupyterlab.utils import get_transform_func, image_base64
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -35,37 +38,41 @@ class MixinMeta():
 
 
 class Visualize(Task, MixinMeta):
-    uploaded_images = Option(type='uploader')
-    output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
 
-    transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=False)
+    input_images = Option(name='Predicting images', type='uploader')
+    output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
+    transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=True)
     model = BasicModule(name='Model', component_types=['Model'])
 
     def __call__(self):
-        fnames = [i.split('/')[-1] for i in self.uploaded_images]
-        uploaded_images_arrays = [cv2.imread(img) for img in self.uploaded_images]
-        transformed_arrays = [self.transform([image])[0] for image in uploaded_images_arrays]
-        transform = get_transform_func(transformed_arrays[0])
-        outputs = [self.model(transform(input)).squeeze() for input in transformed_arrays]
-        shape = outputs[0].shape
-        if self.output_activation == 'None':
-            results = outputs
-        elif self.output_activation == 'sigmoid':
-            results = [torch.sigmoid(output) for output in outputs]
-        elif self.output_activation == 'softmax':
-            results = [torch.nn.Softmax()(output) for output in outputs]
-        else:
-            env.logger.exception(f'unexpected error in inferencing process.')
+        input_images = [cv2.imread(input_image) for input_image in self.input_images]
+        inputs = [self.transform([input_image])[0] for input_image in input_images]
+        
+        shape = input_images[0].shape
+        
+        transform = get_transform_func(inputs[0])
 
-        for idx, image_path in enumerate(self.uploaded_images):
+        logits = [self.model(transform(input)).squeeze() for input in inputs]
+
+        if self.output_activation == 'softmax':
+            outputs = [F.softmax(logit) for logit in logits]
+        elif self.output_activation == 'sigmoid':
+            outputs = [F.sigmoid(logit) for logit in logits]
+        else:
+            outputs = logits
+        
+        df = pd.DataFrame(columns=['Image Name', 'Image Preview (ImageBase64)', 'Image With Masks'])
+        
+        for idx, image_path in enumerate(self.input_images):
             # DISPLAY IMAGES WITH DEFECTS
+            image_name = image_path.split('/')[-1]
             plt.figure(figsize=(0.01 * shape[1], 0.01 * shape[0]))
             img = Image.open(image_path)
             img_array = np.array(img)
             patches = []
-            for classes in range(len(results[idx])):
+            for classes in range(len(outputs[idx])):
                 try:
-                    msk = results[idx][classes]
+                    msk = outputs[idx][classes]
                 except:
                     msk = np.zeros(shape[1:3])
                 msk = mask2contour(msk.detach().numpy(),width=2)
@@ -79,5 +86,15 @@ class Visualize(Task, MixinMeta):
             plt.axis('off') 
             plt.imshow(img_array)
             plt.subplots_adjust(wspace=0.05)
-            plt.savefig(fnames)
-            env.rpc.add_file(fnames)
+            plt.savefig(os.path.join('./images', image_name))
+            self.env.rpc.add_file(os.path.join('./images', image_name))
+            
+            base64encode_origin = image_base64(image_path)
+            base64encode_processed = image_base64(os.path.join('./images', image_name))
+
+            row_data = [image_name, base64encode_origin, base64encode_processed]
+            df.loc[i] = row_data
+        df.to_csv('./output.csv', index=False)
+        self.env.rpc.add_file('./output.csv')
+        
+
