@@ -54,7 +54,8 @@ class Visualize(Task, MixinMeta):
         shape = input_images[0].shape
         
         transform = get_transform_func(inputs[0])
-
+        
+        self.model.eval()
         logits = [self.model(transform(input)).squeeze() for input in inputs]
         
         transform_shape = logits[0].shape
