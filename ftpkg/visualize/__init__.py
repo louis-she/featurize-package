@@ -83,7 +83,7 @@ class Visualize(Task, MixinMeta):
                         msk = cv2.resize(msk, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_LINEAR)
                 except:
                     msk = np.zeros(shape[0:2])
-                msk = mask2contour(msk,width=15)
+                msk = mask2contour(msk,width=5)
 
                 img_array[msk==1,0] = colors[classes][0]
                 img_array[msk==1,1] = colors[classes][1]
