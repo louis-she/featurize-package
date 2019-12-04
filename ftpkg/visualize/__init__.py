@@ -55,7 +55,9 @@ class Visualize(Task, MixinMeta):
         transform = get_transform_func(inputs[0])
 
         logits = [self.model(transform(input)).squeeze() for input in inputs]
-
+        
+        transform_shape = logits[0].shape
+        
         if self.output_activation == 'softmax':
             outputs = [F.softmax(logit) for logit in logits]
         elif self.output_activation == 'sigmoid':
@@ -71,6 +73,10 @@ class Visualize(Task, MixinMeta):
             plt.figure(figsize=(0.01 * shape[1], 0.01 * shape[0]))
             img = Image.open(image_path)
             img_array = np.array(img)
+            
+            if img_array.shape != (transform_shape[1:3]):
+                img_array = cv2.resize(img_array, dsize=(transform_shape[2], transform_shape[1]), interpolation=cv2.INTER_LINEAR)
+            
             patches = []
             for classes in range(len(outputs[idx])):
                 try:
