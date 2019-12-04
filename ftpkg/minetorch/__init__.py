@@ -81,7 +81,8 @@ class ClassificationSampleInference(Task, MixinMeta):
         inputs = [self.transform([input_image])[0] for input_image in input_images]
 
         transform = get_transform_func(inputs[0])
-
+        
+        self.model.eval()
         logits = [self.model(transform(input)).squeeze() for input in inputs]
 
         if self.output_activation == 'softmax':
