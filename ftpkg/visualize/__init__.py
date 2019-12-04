@@ -74,7 +74,6 @@ class Visualize(Task, MixinMeta):
             plt.figure(figsize=(0.01 * shape[1], 0.01 * shape[0]))
             img = Image.open(image_path)
             img_array = np.array(img)
-            print(shape)
             patches = []
             for classes in range(len(outputs[idx])):
                 try:
@@ -88,7 +87,7 @@ class Visualize(Task, MixinMeta):
                 img_array[msk==1,0] = colors[classes][0]
                 img_array[msk==1,1] = colors[classes][1]
                 img_array[msk==1,2] = colors[classes][2]
-                patches.append(mpatches.Patch(color=matplotlib.colors.to_rgba(np.array(colors[classes])/255), label=classes))
+                patches.append(mpatches.Patch(color=matplotlib.colors.to_rgba(np.array(colors[classes])/255), label=f'Class {classes+1}'))
 
             plt.legend(handles=patches)
             plt.axis('off') 
