@@ -2,6 +2,7 @@ from featurize_jupyterlab.core import Dataset, Option, Task, BasicModule, Datafl
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as TorchDataset
 from sklearn.model_selection import StratifiedKFold
+from zipfile import zipfile
 
 def rle2mask(label):
     label = label.split(" ")
@@ -116,11 +117,14 @@ class TrainDataset(Dataset):
     val_augmentations = DataflowModule(name='Validation Augmentations', component_types=['Dataflow'], multiple=True, required=False)
 
     def __call__(self):
+        with ZipFile(upload, 'r') as zip_object:
+            zip_object.extractall()
+        fold = upload.split('.zip')[0]
         df = pd.read_csv(self.annotations)
         train_dfs, val_dfs = Kfold(df, n_splits=self.kfold)
         train_df = train_dfs[0]
         val_df = val_dfs[0]
         return (
-            DataLoader(dataset=TorchDatasetBoth(annotation=train_df, data_folder=self.fold, transforms=self.train_augmentations, mode=self.mode), batch_size=self.batch_size),
-            DataLoader(dataset=TorchDatasetBoth(annotation=val_df, data_folder=self.fold, transforms=self.val_augmentations, mode=self.mode), batch_size=self.batch_size)
+            DataLoader(dataset=TorchDatasetBoth(annotation=train_df, data_folder=fold, transforms=self.train_augmentations, mode=self.mode), batch_size=self.batch_size),
+            DataLoader(dataset=TorchDatasetBoth(annotation=val_df, data_folder=fold, transforms=self.val_augmentations, mode=self.mode), batch_size=self.batch_size)
         )
