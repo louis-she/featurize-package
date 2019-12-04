@@ -45,6 +45,7 @@ class Visualize(Task, MixinMeta):
     output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
     transform = DataflowModule(name='Transform', component_types=['Dataflow'], multiple=True, required=True)
     model = BasicModule(name='Model', component_types=['Model'])
+    pixel_threshold = Option(name='Pixel Threshold', type='number', default=0.5)
 
     def __call__(self):
         input_images = [cv2.imread(input_image) for input_image in self.input_images]
@@ -61,7 +62,7 @@ class Visualize(Task, MixinMeta):
         if self.output_activation == 'softmax':
             outputs = [F.softmax(logit) for logit in logits]
         elif self.output_activation == 'sigmoid':
-            outputs = [F.sigmoid(logit) for logit in logits]
+            outputs = [torch.sigmoid(logit) for logit in logits]
         else:
             outputs = logits
         
@@ -73,17 +74,16 @@ class Visualize(Task, MixinMeta):
             plt.figure(figsize=(0.01 * shape[1], 0.01 * shape[0]))
             img = Image.open(image_path)
             img_array = np.array(img)
-            
-            if img_array.shape != (transform_shape[1:3]):
-                img_array = cv2.resize(img_array, dsize=(transform_shape[2], transform_shape[1]), interpolation=cv2.INTER_LINEAR)
-            
+            print(shape)
             patches = []
             for classes in range(len(outputs[idx])):
                 try:
-                    msk = outputs[idx][classes]
+                    msk = cv2.threshold(outputs[idx][classes].detach().numpy(), self.pixel_threshold, 1, cv2.THRESH_BINARY)[1]
+                    if msk.shape != shape[0:2]:
+                        msk = cv2.resize(msk, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_LINEAR)
                 except:
-                    msk = np.zeros(shape[1:3])
-                msk = mask2contour(msk.detach().numpy(),width=2)
+                    msk = np.zeros(shape[0:2])
+                msk = mask2contour(msk,width=15)
 
                 img_array[msk==1,0] = colors[classes][0]
                 img_array[msk==1,1] = colors[classes][1]
@@ -93,8 +93,8 @@ class Visualize(Task, MixinMeta):
             plt.legend(handles=patches)
             plt.axis('off') 
             plt.imshow(img_array)
-            plt.subplots_adjust(wspace=0.05)
-            plt.savefig(os.path.join('./images', image_name))
+            #plt.subplots_adjust(wspace=0.001)
+            plt.savefig(os.path.join('./images', image_name), bbox_inches='tight', pad_inches=0.0)
             self.env.rpc.add_file(os.path.join('./images', image_name))
             
             base64encode_origin = image_base64(image_path)
