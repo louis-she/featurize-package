@@ -65,7 +65,7 @@ class Visualize(Task, MixinMeta):
         else:
             outputs = logits
         
-        df = pd.DataFrame(columns=['Image Name', 'Image Preview (ImageBase64)', 'Image With Masks'])
+        df = pd.DataFrame(columns=['Image Name', 'Image Preview (ImageBase64)', 'Image With Masks (ImageBase64)'])
         
         for idx, image_path in enumerate(self.input_images):
             # DISPLAY IMAGES WITH DEFECTS
