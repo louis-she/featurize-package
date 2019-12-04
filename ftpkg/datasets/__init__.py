@@ -81,7 +81,7 @@ class TorchDatasetBoth(TorchDataset):
         try:
             img = cv2.imread(image_path)
         except:
-            continue
+            return
         mask = self.make_mask(df_row, img.shape)
         if self.mode == 'segmentations':
             augmented = self.transforms(image=img, mask=mask)
