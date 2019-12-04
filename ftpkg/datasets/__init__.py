@@ -2,7 +2,7 @@ from featurize_jupyterlab.core import Dataset, Option, Task, BasicModule, Datafl
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as TorchDataset
 from sklearn.model_selection import StratifiedKFold
-from zipfile import zipfile
+from zipfile import Zipfile
 
 def rle2mask(label):
     label = label.split(" ")
