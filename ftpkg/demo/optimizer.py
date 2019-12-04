@@ -5,14 +5,14 @@ from torch.optim import SGD
 
 class PyTorchSGD(Optimizer):
 
-    learning_rate = Option(name='Learning Rate', type='number', defalt=0.001)
+    learning_rate = Option(name='Learning Rate', type='number', default=0.001)
 
     def __call__(self):
         return SGD(self.model.parameters(), float(self.learning_rate))
 
 class RAdam(Optimizer):
 
-    learning_rate = Option(name='Learning Rate', type='number', defalt=0.001)
+    learning_rate = Option(name='Learning Rate', type='number', default=0.001)
 
     def __call__(self):
         return TorchRAdam(self.model.parameters(), lr=float(self.learning_rate))
