@@ -9,6 +9,7 @@ from featurize_jupyterlab.utils import get_transform_func, image_base64
 
 PYPI_PACKAGE_NAME = 'featurize-package'
 
+
 class MixinMeta():
     namespace = 'minetorch'
 
@@ -34,7 +35,10 @@ class CorePlugin(minetorch.Plugin):
         env.rpc.add_point('train_iteration_loss', payload['iteration'], payload['loss'])
 
 
-class Minetorch(Task, MixinMeta):
+class TrainClassifier(Task, MixinMeta):
+    name = 'Train Classifier Task'
+    task_type = 'classification'
+
     # create module
     train_transform = DataflowModule(name='Train Transform', component_types=['Dataflow'], multiple=True, required=False)
     val_transform = DataflowModule(name='Validation Transform', component_types=['Dataflow'], multiple=True, required=False)
@@ -70,6 +74,7 @@ class Minetorch(Task, MixinMeta):
 
 
 class ClassificationSampleInference(Task, MixinMeta):
+    task_type = 'classification'
 
     input_images = Option(name='Predicting images', type='uploader')
     output_activation = Option(name='activation', type='collection', default='None', collection=['None', 'sigmoid', 'softmax'])
@@ -81,7 +86,7 @@ class ClassificationSampleInference(Task, MixinMeta):
         inputs = [self.transform([input_image])[0] for input_image in input_images]
 
         transform = get_transform_func(inputs[0])
-        
+
         self.model.eval()
         logits = [self.model(transform(input)).squeeze() for input in inputs]
 
