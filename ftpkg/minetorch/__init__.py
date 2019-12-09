@@ -107,3 +107,41 @@ class ClassificationSampleInference(Task, MixinMeta):
             df.loc[i] = row_data
         df.to_csv('./output.csv', index=False)
         self.env.rpc.add_file('./output.csv')
+
+
+class TrainSegmentation(Task, MixinMeta):
+    name = 'Train Segmentation Task'
+    task_type = 'segmentation'
+
+    # create module
+    train_transform = DataflowModule(name='Train Transform', component_types=['Dataflow'], multiple=True, required=False)
+    val_transform = DataflowModule(name='Validation Transform', component_types=['Dataflow'], multiple=True, required=False)
+    dataset = BasicModule(name='Dataset', component_types=['Dataset'])
+    model = BasicModule(name='Model', component_types=['Model'])
+    loss = BasicModule(name='Loss', component_types=['Loss'])
+    metrics = BasicModule(name='Metirc', component_types=['Metric'], required=False)
+    optimizer = BasicModule(name='Optimizer', component_types=['Optimizer'])
+
+    # create dependencies
+    optimizer.add_dependency(model)
+    dataset.add_dependency(train_transform, val_transform)
+
+    def __call__(self):
+        train_dataset, val_dataset = self.dataset[0]
+
+        miner = minetorch.Miner(
+            alchemistic_directory='./log',
+            model=self.model,
+            optimizer=self.optimizer,
+            train_dataloader=train_dataset,
+            val_dataloader=val_dataset,
+            loss_func=self.loss,
+            drawer=None,
+            logger=env.logger,
+            plugins=[CorePlugin()]
+        )
+
+        try:
+            miner.train()
+        except Exception as e:
+            env.logger.exception(f'unexpected error in training process: {e}')
