@@ -112,7 +112,7 @@ class ClassificationSampleInference(Task, MixinMeta):
         self.env.rpc.add_file('./output.csv')
 
 
-class TrainSegmentation(Task, MixinMeta):
+class TrainSegmentation(Task, MixinMetaSeg):
     name = 'Train Segmentation Task'
     task_type = 'segmentation'
 
