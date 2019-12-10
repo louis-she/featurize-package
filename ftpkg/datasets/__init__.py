@@ -144,36 +144,31 @@ class TrainDataset(Dataset):
     annotations = Option(type='uploader', help='You may upload a csv file with columns=["image_names", "class_1_labels", "class_2_labels", ..., "class_n_labels"]')
     batch_size = Option(name='Batch Size', type='number')
     split_ratio = Option(name='Split Ratio', type='number', default=0.2, help='Split your datasets into trainset and valset')
-    k_fold = Option(name='K folds', type='number', default=1, help='Number of folds to split from original datasets', required=False)
+    #k_fold = Option(name='K folds', type='number', default=1, help='Number of folds to split from original datasets', required=False)
     dataset = BasicModule(name='Dataset', component_types=['Dataset'])
     train_augmentations = DataflowModule(name='Train Augmentations', component_types=['Dataflow'], multiple=True, required=False)
     val_augmentations = DataflowModule(name='Validation Augmentations', component_types=['Dataflow'], multiple=True, required=False)
 
 
     def __call__(self):
-        assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
+        #assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
         assert isinstance(batch_size, int), 'Batch Size must be an interger'
         assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
         with ZipFile(upload, 'r') as zip_object:
             zip_object.extractall()
         fold = upload.split('.zip')[0]
         df = pd.read_csv(self.annotations)
-        train_dfs, val_dfs = Kfold(df, n_splits=self.kfold)
+        train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
 
         if self.__task__.task_type == 'classification':
-            for i in range(k_fold):
-                Dataloader_list.append(
-                    (
-                        DataLoader(dataset=ClassificationDataset(annotation=train_df[i], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                        DataLoader(dataset=ClassificationDataset(annotation=val_df[i], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
-                        )
+                dataloader_train = (
+                    DataLoader(dataset=ClassificationDataset(annotation=train_df[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+                    DataLoader(dataset=ClassificationDataset(annotation=val_df[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
+                    
         elif self.__task__.task_type == 'segmentation':
-            for i in range(k_fold):
-                Dataloader_list.append(
-                    (
-                        DataLoader(dataset=SegmentationDataset(annotation=train_df[i], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                        DataLoader(dataset=SegmentationDataset(annotation=val_df[i], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
-                        )
+                dataloader_train = (
+                    DataLoader(dataset=SegmentationDataset(annotation=train_df[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+                    DataLoader(dataset=SegmentationDataset(annotation=val_df[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
-        return Dataloader_list
+        return dataloader_train
