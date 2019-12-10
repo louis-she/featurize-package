@@ -14,6 +14,9 @@ class MixinMeta():
     namespace = 'minetorch'
 
 
+class MixinMetaSeg():
+    namespace = 'segmentation'
+
 class CorePlugin(minetorch.Plugin):
     """The Minetorch Trainer can be runned independently.
     This plugin activate Trainer with the ability to communicate with the
@@ -128,7 +131,7 @@ class TrainSegmentation(Task, MixinMeta):
 
     def __call__(self):
         train_dataset, val_dataset = self.dataset[0]
-
+        kfold = len(self.dataset)
         miner = minetorch.Miner(
             alchemistic_directory='./log',
             model=self.model,
