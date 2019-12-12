@@ -143,9 +143,9 @@ class SegmentationDataset(FeaturizeDataset):
 class TrainDataset(Dataset):
     """This is a segmentation dataset preparing data from annotations and data directory
     """
-    #fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")
-    upload = Option(help='Upload your trainning images', type='uploader', required=True)
+    #fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")  
     annotations = Option(type='uploader', help='You may upload a csv file with columns=["image_names", "class_1_labels", "class_2_labels", ..., "class_n_labels"]')
+    upload = Option(help='Upload your trainning images', type='uploader', required=True)
     batch_size = Option(name='Batch Size', type='number')
     split_ratio = Option(name='Split Ratio', type='number', default=0.2, help='Split your datasets into trainset and valset')
     #k_fold = Option(name='K folds', type='number', default=1, help='Number of folds to split from original datasets', required=False)
