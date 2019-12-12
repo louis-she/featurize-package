@@ -6,7 +6,7 @@ from zipfile import ZipFile
 import pandas as pd
 import numpy as np
 import os
-
+from sklearn.model_selection import train_test_split
 
 def rle2mask(label, shape):
     label = label.split(" ")
@@ -141,7 +141,7 @@ class SegmentationDataset(FeaturizeDataset):
 
 
 class TrainDataset(Dataset):
-    """This is a segmentation dataset preparing data from annotations and data directory
+    """This is a segmentation datasettrain_test_split preparing data from annotations and data directory
     """
     #fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")  
     annotations = Option(type='uploader', help='You may upload a csv file with columns=["image_names", "class_1_labels", "class_2_labels", ..., "class_n_labels"]')
@@ -164,17 +164,18 @@ class TrainDataset(Dataset):
             zip_object.extractall()
         fold = self.upload[0].split('.zip')[0]
         df = pd.read_csv('./inputs/annotations/satellite_sample.csv')
-        train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
+        #train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
+        train_df, val_df = train_test_split(df, test_size=0.1)
 
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
-                    DataLoader(dataset=ClassificationDataset(annotation=train_dfs[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                    DataLoader(dataset=ClassificationDataset(annotation=val_dfs[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
+                    DataLoader(dataset=ClassificationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+                    DataLoader(dataset=ClassificationDataset(annotation=val_df, data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
                     
         elif self.__task__.task_type == 'segmentation':
                 dataloader_train = (
-                    DataLoader(dataset=SegmentationDataset(annotation=train_dfs[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                    DataLoader(dataset=SegmentationDataset(annotation=val_dfs[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
+                    DataLoader(dataset=SegmentationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+                    DataLoader(dataset=SegmentationDataset(annotation=val_df, data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
         return dataloader_train
