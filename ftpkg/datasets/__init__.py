@@ -152,8 +152,8 @@ class TrainDataset(Dataset):
 
     def __call__(self):
         #assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
-        assert isinstance(batch_size, int), 'Batch Size must be an interger'
-        assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
+        #assert isinstance(batch_size, int), 'Batch Size must be an interger'
+        #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
         with ZipFile(upload, 'r') as zip_object:
             zip_object.extractall()
         fold = upload.split('.zip')[0]
