@@ -164,7 +164,7 @@ class TrainDataset(Dataset):
             zip_object.extractall()
         fold = self.upload[0].split('.zip')[0]
         df = pd.read_csv('./inputs/annotations/satellite_sample.csv')
-        train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
+        train_dfs, val_dfs = Kfold(df, n_splits=1)  # TO DO: kfold for datasets
 
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
