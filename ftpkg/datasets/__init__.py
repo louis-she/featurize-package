@@ -3,6 +3,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as TorchDataset
 from sklearn.model_selection import StratifiedKFold
 from zipfile import ZipFile
+import pandas as pd
+import numpy as np
+import os
+
 
 def rle2mask(label, shape):
     label = label.split(" ")
@@ -49,7 +53,7 @@ class FeaturizeDataset(TorchDataset):
         self.root = data_folder
         self.transforms = transforms
         self.fnames = self.df.columns[0]
-        self.classes = self.df.columns[1:len(df.columns)+1]
+        self.classes = self.df.columns[1:len(self.df.columns)+1]
         self.num_classes = len(self.classes)
         self.count = 0
         self.miss_count = 0
@@ -97,16 +101,16 @@ class SegmentationDataset(FeaturizeDataset):
         self.root = data_folder
         self.transforms = transforms
         self.fnames = self.df.columns[0]
-        self.classes = self.df.columns[1:len(df.columns)+1]
+        self.classes = self.df.columns[1:len(self.df.columns)+1]
         self.num_classes = len(self.classes)
         self.count = 0
 
     def make_mask(self, df_row, shape):
         labels = df_row[1:self.num_classes + 1]
         masks = np.zeros(shape, dtype=np.float32)
-        for idx, mask in enumerate(masks.values):
+        for idx, mask in enumerate(labels.values):
             if mask is not np.nan:
-                mask_array = rle2mask(mask, )
+                mask_array = rle2mask(mask, shape)
                 masks[:, :, idx] = mask_array.reshape(shape[0], shape[1], order='F')
         results = masks
         return results
@@ -154,21 +158,21 @@ class TrainDataset(Dataset):
         #assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
         #assert isinstance(batch_size, int), 'Batch Size must be an interger'
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
-        with ZipFile(upload, 'r') as zip_object:
+        with ZipFile(self.upload, 'r') as zip_object:
             zip_object.extractall()
-        fold = upload.split('.zip')[0]
+        fold = self.upload.split('.zip')[0]
         df = pd.read_csv(self.annotations)
         train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
 
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
-                    DataLoader(dataset=ClassificationDataset(annotation=train_df[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                    DataLoader(dataset=ClassificationDataset(annotation=val_df[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
+                    DataLoader(dataset=ClassificationDataset(annotation=train_dfs[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+                    DataLoader(dataset=ClassificationDataset(annotation=val_dfs[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
                     
         elif self.__task__.task_type == 'segmentation':
                 dataloader_train = (
-                    DataLoader(dataset=SegmentationDataset(annotation=train_df[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                    DataLoader(dataset=SegmentationDataset(annotation=val_df[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
+                    DataLoader(dataset=SegmentationDataset(annotation=train_dfs[0], data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
+                    DataLoader(dataset=SegmentationDataset(annotation=val_dfs[0], data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
         return dataloader_train
