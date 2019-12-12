@@ -158,15 +158,14 @@ class TrainDataset(Dataset):
         #assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
         #assert isinstance(batch_size, int), 'Batch Size must be an interger'
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
-        print(self.upload)
-        print(self.annotations)
         with ZipFile(self.upload[0], 'r') as zip_object:
             zip_object.extractall()
         fold = self.upload[0].split('.zip')[0]
         df = pd.read_csv('./inputs/annotations/satellite_sample.csv')
         #train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
         train_df, val_df = train_test_split(df, test_size=0.1)
-
+        print(train_df.head())
+        print(fold)
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
                     DataLoader(dataset=ClassificationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
