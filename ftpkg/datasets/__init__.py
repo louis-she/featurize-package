@@ -166,6 +166,7 @@ class TrainDataset(Dataset):
         train_df, val_df = train_test_split(df, test_size=0.1)
         print(train_df.head())
         print(fold)
+        print(os.listdir(fold)[0:5])
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
                     DataLoader(dataset=ClassificationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
