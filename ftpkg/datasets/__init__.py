@@ -84,12 +84,12 @@ class ClassificationDataset(FeaturizeDataset):
         try:
             img = cv2.imread(image_path)
         except:
-            self.miss_count += 1
+            #self.miss_count += 1
             return
         label = self.make_label(df_row)
         augmented = self.transforms(image=img)
         img = augmented['image']
-        self.count += 1
+        #self.count += 1
         
         return img, label, image_id
 
@@ -122,14 +122,14 @@ class SegmentationDataset(FeaturizeDataset):
         try:
             img = cv2.imread(image_path)
         except:
-            self.miss_count += 1
+            #self.miss_count += 1
             return
         mask = self.make_mask(df_row, img.shape)
         augmented = self.transforms(image=img, mask=mask)
         img = augmented['image']
         mask = augmented['mask']
         mask = mask[0].permute(2, 0, 1)
-        self.count += 1
+        #self.count += 1
         
         return img, mask, image_id
 
