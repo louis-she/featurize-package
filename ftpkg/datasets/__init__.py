@@ -25,7 +25,7 @@ def Kfold(df,n_splits=5):
     for i,j in df.iterrows():
         tmp = []
         for k in range(num_classes):
-            if j['%s'%(k)] is not np.nan:
+            if j[df.columns[k]] is not np.nan:
                 tmp.append(2**(k))
 
         labels.append(int(np.sum(tmp)))
