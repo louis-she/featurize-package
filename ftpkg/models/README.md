@@ -11,5 +11,5 @@ https://github.com/lukemelas/EfficientNet-PyTorch, https://github.com/qubvel/seg
 We adopted the models implementation from above 2 repos.
 
 <p align="center">
-  <img  height='657' width='286' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/models/models.png">
+  <img  height='985.5' width='429' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/models/models.png">
 </p>
