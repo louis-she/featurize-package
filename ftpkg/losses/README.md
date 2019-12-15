@@ -5,5 +5,5 @@ This package contains various loss functions, including built-in loss function *
 These loss functions are provided for multiple training tasks including **classification**, **segmentation** and more.
 
 <p align="center">
-  <img  height='985.5' width='429' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/losses/bceloss.png">
+  <img  height='429' width='985.5' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/losses/bceloss.png">
 </p>
