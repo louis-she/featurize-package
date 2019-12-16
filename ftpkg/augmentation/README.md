@@ -12,5 +12,6 @@ featurize package:add ftpkg.augmentation
 Enjoy it!
 
 <p align="center">
-  <img  height='800' width='1296' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/augmentation/augmentation.jpg">
+  <img  height='900' width='1296' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/augmentation/augmentation.jpg">
 </p>
+image from https://www.reddit.com/r/MachineLearning/comments/c7w153/p_albumentations_an_image_augmentation_library/
