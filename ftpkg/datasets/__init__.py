@@ -131,7 +131,8 @@ class SegmentationDataset(FeaturizeDataset):
         #augmented = self.transforms(image=img, mask=mask)
         #img = augmented['image']
         #mask = augmented['mask']
-        print(torch.Tensor(mask).shape)
+        img = torch.Tensor(img).permute(2, 0, 1)
+        print(img.shape)
         mask = torch.Tensor(mask).permute(2, 0, 1)
         #self.count += 1
 
