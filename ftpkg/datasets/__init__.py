@@ -47,7 +47,7 @@ def Kfold(df,n_splits=5):
     return train_folds, val_folds
 
 class FeaturizeDataset(TorchDataset):
-    
+
     def __init__(self, annotation, data_folder, transforms):
         self.df = annotation
         self.root = data_folder
@@ -60,7 +60,7 @@ class FeaturizeDataset(TorchDataset):
 
     def __len__(self):
         return len(self.df)
-    
+
     def __count__(self):
         return self.count
 
@@ -68,15 +68,15 @@ class FeaturizeDataset(TorchDataset):
 class ClassificationDataset(FeaturizeDataset):
 
     def make_label(self, df_row):
-        
+
         labels = df_row[1:self.num_classes + 1]
         classification_labels = []
         for idx, label in enumerate(labels.values):
             classification_labels.append(label)
             results = np.array(classification_labels)
-        
+
         return results
-    
+
     def __getitem__(self, idx):
         df_row = self.df.iloc[idx]
         image_id = self.df.iloc[idx][self.fnames]
@@ -90,12 +90,12 @@ class ClassificationDataset(FeaturizeDataset):
         augmented = self.transforms(image=img)
         img = augmented['image']
         #self.count += 1
-        
+
         return img, label, image_id
 
 
 class SegmentationDataset(FeaturizeDataset):
-    
+
     def __init__(self, annotation, data_folder, transforms):
         self.df = annotation
         self.root = data_folder
@@ -114,7 +114,7 @@ class SegmentationDataset(FeaturizeDataset):
                 masks[:, :, idx] = mask_array.reshape(shape[0], shape[1], order='F')
         results = masks
         return results
-    
+
     def __getitem__(self, idx):
         df_row = self.df.iloc[idx]
         image_id = self.df.iloc[idx][self.fnames]
@@ -130,12 +130,12 @@ class SegmentationDataset(FeaturizeDataset):
         mask = augmented['mask']
         mask = mask[0].permute(2, 0, 1)
         #self.count += 1
-        
+
         return img, mask, image_id
 
     def __len__(self):
         return len(self.df)
-    
+
     def __count__(self):
         return self.count
 
@@ -143,7 +143,7 @@ class SegmentationDataset(FeaturizeDataset):
 class TrainDataset(Dataset):
     """This is a segmentation datasettrain_test_split preparing data from annotations and data directory
     """
-    #fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")  
+    #fold = Option(help='Absolute fold path to the dataset', required=True, default="~/.minetorch_dataset/torchvision_mnist")
     annotations = Option(type='uploader', help='You may upload a csv file with columns=["image_names", "class_1_labels", "class_2_labels", ..., "class_n_labels"]')
     upload = Option(help='Upload your trainning images', type='uploader', required=True)
     batch_size = Option(name='Batch Size', type='number')
@@ -158,21 +158,19 @@ class TrainDataset(Dataset):
         #assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
         #assert isinstance(batch_size, int), 'Batch Size must be an interger'
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
+
         with ZipFile(self.upload[0], 'r') as zip_object:
             zip_object.extractall()
         fold = self.upload[0].split('.zip')[0]
-        df = pd.read_csv('./inputs/annotations/satellite_sample.csv')
+        df = pd.read_csv(self.annotations[0])
         #train_dfs, val_dfs = Kfold(df, n_splits=5)  # TO DO: kfold for datasets
         train_df, val_df = train_test_split(df, test_size=0.1)
-        print(train_df.head())
-        print(fold)
-        print(os.listdir())
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
                     DataLoader(dataset=ClassificationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
                     DataLoader(dataset=ClassificationDataset(annotation=val_df, data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
                     )
-                    
+
         elif self.__task__.task_type == 'segmentation':
                 dataloader_train = (
                     DataLoader(dataset=SegmentationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
