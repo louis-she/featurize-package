@@ -27,7 +27,7 @@ class Crop(DualImageTransformation):
     y_max = Option(type='number', help='maximum lower right y coordinate')
 
     def create_aug(self):
-        return albu.CenterCrop(self.x_min, self.y_min, self.x_max, self.y_max, p=self.probability)
+        return albu.Crop(self.x_min, self.y_min, self.x_max, self.y_max, p=self.probability)
 
 
 class CropNonEmptyMaskIfExists(DualImageTransformation):
@@ -49,7 +49,7 @@ class CropNonEmptyMaskIfExists(DualImageTransformation):
         else:
             self.ignore_channels = None
 
-        return albu.CenterCrop(
+        return albu.CropNonEmptyMaskIfExists(
             self.height,
             self.width,
             ignore_values=self.ignore_values,
@@ -257,19 +257,8 @@ class VerticalFlip(DualImageTransformation):
 # BasicImageTransformation
 # Pixel-level transforms for images only
 
-class Blur(BasicImageTransformation):
-    """
-    """
-    blur_limit = Option(type='number', default=7, help='maximum kernel size for blurring the input image.')
 
-    def create_aug(self):
-        return albu.Resize(
-            blur_limit=self.blur_limit,
-            p=self.probability
-            )
-
-
-class Blur(BasicImageTransformation):
+class CLAHE(BasicImageTransformation):
     """
     """
     clip_limit = Option(type='number', default=4.0, help='upper threshold value for contrast limiting.')
