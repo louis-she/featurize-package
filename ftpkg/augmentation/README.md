@@ -11,3 +11,6 @@ featurize package:add ftpkg.augmentation
 ```
 Enjoy it!
 
+<p align="center">
+  <img  height='1296' width='1296' src="https://github.com/louis-she/featurize-package/blob/master/ftpkg/augmentation/augmentation.jpg">
+</p>
