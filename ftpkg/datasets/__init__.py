@@ -159,7 +159,7 @@ class TrainDataset(Dataset):
         #assert isinstance(batch_size, int), 'Batch Size must be an interger'
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
         
-        fold = self.upload[0].split('.zip')[0]
+        fold = os.path.join(os.getcwd(), self.upload[0].split('.zip')[0])
         with ZipFile(self.upload[0], 'r') as zip_object:
             zip_object.extractall(os.path.split(fold)[0])
         df = pd.read_csv(self.annotations[0])
