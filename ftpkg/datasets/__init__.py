@@ -5,7 +5,9 @@ from sklearn.model_selection import StratifiedKFold
 from zipfile import ZipFile
 import pandas as pd
 import numpy as np
+import torch
 import os
+import cv2
 from sklearn.model_selection import train_test_split
 
 def rle2mask(label, shape):
@@ -124,11 +126,13 @@ class SegmentationDataset(FeaturizeDataset):
         except:
             #self.miss_count += 1
             return
-        mask = self.make_mask(df_row, img.shape)
-        augmented = self.transforms(image=img, mask=mask)
-        img = augmented['image']
-        mask = augmented['mask']
-        mask = mask[0].permute(2, 0, 1)
+        mask_shape = (img.shape[0], img.shape[1], self.num_classes)
+        mask = self.make_mask(df_row, mask_shape)
+        #augmented = self.transforms(image=img, mask=mask)
+        #img = augmented['image']
+        #mask = augmented['mask']
+        print(torch.Tensor(mask).shape)
+        mask = torch.Tensor(mask).permute(2, 0, 1)
         #self.count += 1
 
         return img, mask, image_id
@@ -159,7 +163,7 @@ class TrainDataset(Dataset):
         #assert isinstance(batch_size, int), 'Batch Size must be an interger'
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
         
-        fold = os.path.join(os.getcwd(), self.upload[0].split('.zip')[0])
+        fold = os.path.join(os.getcwd(), self.upload[0].split('.zip')[0].split('./')[1])
         with ZipFile(self.upload[0], 'r') as zip_object:
             zip_object.extractall(os.path.split(fold)[0])
         df = pd.read_csv(self.annotations[0])

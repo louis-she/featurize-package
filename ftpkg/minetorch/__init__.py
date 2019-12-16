@@ -130,7 +130,7 @@ class TrainSegmentation(Task, MixinMetaSeg):
     dataset.add_dependency(train_transform, val_transform)
 
     def __call__(self):
-        train_dataset, val_dataset = self.dataset[0]
+        train_dataset, val_dataset = self.dataset
         kfold = len(self.dataset)
         miner = minetorch.Miner(
             alchemistic_directory='./log',
