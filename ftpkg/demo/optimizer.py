@@ -2,6 +2,7 @@ from torch.optim.optimizer import Optimizer as TorchOptimizer
 from featurize_jupyterlab.core import Optimizer, Option
 from torch.optim import SGD
 import torch
+import math
 
 
 class PyTorchSGD(Optimizer):
@@ -73,7 +74,9 @@ class TorchRAdam(TorchOptimizer):
                 beta1, beta2 = group['betas']
 
                 exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
-                exp_avg.mul_(beta1).add_(1 - beRAdam
+                exp_avg.mul_(beta1).add_(1 - beta1, grad)
+
+                state['step'] += 1
                 buffered = group['buffer'][int(state['step'] % 10)]
                 if state['step'] == buffered[0]:
                     N_sma, step_size = buffered[1], buffered[2]
