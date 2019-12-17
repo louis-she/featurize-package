@@ -1,6 +1,7 @@
 from torch.optim.optimizer import Optimizer as TorchOptimizer
 from featurize_jupyterlab.core import Optimizer, Option
 from torch.optim import SGD
+import torch
 
 
 class PyTorchSGD(Optimizer):
@@ -36,10 +37,10 @@ class TorchRAdam(TorchOptimizer):
                 if 'betas' in param and (param['betas'][0] != betas[0] or param['betas'][1] != betas[1]):
                     param['buffer'] = [[None, None, None] for _ in range(10)]
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, buffer=[[None, None, None] for _ in range(10)])
-        super(RAdam, self).__init__(params, defaults)
+        super(TorchRAdam, self).__init__(params, defaults)
 
     def __setstate__(self, state):
-        super(RAdam, self).__setstate__(state)
+        super(TorchRAdam, self).__setstate__(state)
 
     def step(self, closure=None):
 
@@ -72,9 +73,7 @@ class TorchRAdam(TorchOptimizer):
                 beta1, beta2 = group['betas']
 
                 exp_avg_sq.mul_(beta2).addcmul_(1 - beta2, grad, grad)
-                exp_avg.mul_(beta1).add_(1 - beta1, grad)
-
-                state['step'] += 1
+                exp_avg.mul_(beta1).add_(1 - beRAdam
                 buffered = group['buffer'][int(state['step'] % 10)]
                 if state['step'] == buffered[0]:
                     N_sma, step_size = buffered[1], buffered[2]
