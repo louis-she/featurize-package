@@ -126,17 +126,15 @@ class SegmentationDataset(FeaturizeDataset):
         except:
             #self.miss_count += 1
             return
+        #img_shape = img.shape
         mask_shape = (img.shape[0], img.shape[1], self.num_classes)
         mask = self.make_mask(df_row, mask_shape)
-        #augmented = self.transforms(image=img, mask=mask)
-        #img = augmented['image']
-        #mask = augmented['mask']
-        img = torch.Tensor(img).permute(2, 0, 1)
-        print(img.shape)
-        mask = torch.Tensor(mask).permute(2, 0, 1)
-        #self.count += 1
 
-        return img, mask, image_id
+        processed = self.transforms([img, mask])
+        img_ = processed[0]
+        mask_ = processed[1].reshape(processed[1].shape[2], processed[1].shape[0], processed[1].shape[1])
+
+        return img_, mask_
 
     def __len__(self):
         return len(self.df)
@@ -154,10 +152,6 @@ class TrainDataset(Dataset):
     batch_size = Option(name='Batch Size', type='number')
     split_ratio = Option(name='Split Ratio', type='number', default=0.2, help='Split your datasets into trainset and valset')
     #k_fold = Option(name='K folds', type='number', default=1, help='Number of folds to split from original datasets', required=False)
-    dataset = BasicModule(name='Dataset', component_types=['Dataset'])
-    train_augmentations = DataflowModule(name='Train Augmentations', component_types=['Dataflow'], multiple=True, required=False)
-    val_augmentations = DataflowModule(name='Validation Augmentations', component_types=['Dataflow'], multiple=True, required=False)
-
 
     def __call__(self):
         #assert isinstance(k_fold, int) and kfold > 0, 'K fold must be an interger'
@@ -172,13 +166,13 @@ class TrainDataset(Dataset):
         train_df, val_df = train_test_split(df, test_size=0.1)
         if self.__task__.task_type == 'classification':
                 dataloader_train = (
-                    DataLoader(dataset=ClassificationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                    DataLoader(dataset=ClassificationDataset(annotation=val_df, data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
+                    DataLoader(dataset=ClassificationDataset(annotation=train_df, data_folder=fold, transforms=self.train_transform), batch_size=self.batch_size),
+                    DataLoader(dataset=ClassificationDataset(annotation=val_df, data_folder=fold, transforms=self.val_transform), batch_size=self.batch_size)
                     )
 
         elif self.__task__.task_type == 'segmentation':
                 dataloader_train = (
-                    DataLoader(dataset=SegmentationDataset(annotation=train_df, data_folder=fold, transforms=self.train_augmentations), batch_size=self.batch_size),
-                    DataLoader(dataset=SegmentationDataset(annotation=val_df, data_folder=fold, transforms=self.val_augmentations), batch_size=self.batch_size)
+                    DataLoader(dataset=SegmentationDataset(annotation=train_df, data_folder=fold, transforms=self.train_transform), batch_size=self.batch_size),
+                    DataLoader(dataset=SegmentationDataset(annotation=val_df, data_folder=fold, transforms=self.val_transform), batch_size=self.batch_size)
                     )
         return dataloader_train
