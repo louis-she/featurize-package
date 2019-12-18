@@ -1,6 +1,6 @@
 # DualImageTransformation
 # Spatial-level transforms for both images, masks, bbox and keypoints
-import albumentations.augmentations.transforms as albu
+import albumentations as albu
 import albumentations
 import json
 import cv2
@@ -408,7 +408,7 @@ class IAAAdditiveGaussianNoise(BasicImageTransformation):
     upper_limit = Option(type='number', default=12.75, help='Upper limit of standard deviation of the normal distribution that generates the noise. ')
     per_channel = Option(type='boolean', default=False)
     def create_aug(self):
-        return albumentations.imgaug.transforms.IAAAdditiveGaussianNoise(
+        return albu.IAAAdditiveGaussianNoise(
             loc=self.loc,
             scale=(0., self.upper_limit),
             per_channel=self.per_channel,
