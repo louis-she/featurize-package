@@ -1,4 +1,5 @@
 import minetorch
+import torch
 import cv2
 import os
 import numpy as np
@@ -94,11 +95,11 @@ class Visualize(Task, MixinMeta):
             plt.axis('off') 
             plt.imshow(img_array)
             #plt.subplots_adjust(wspace=0.001)
-            plt.savefig(os.path.join('./images', image_name), bbox_inches='tight', pad_inches=0.0)
-            self.env.rpc.add_file(os.path.join('./images', image_name))
+            plt.savefig(os.path.join('/tmp', image_name), bbox_inches='tight', pad_inches=0.0)
+            self.env.rpc.add_file(os.path.join('/tmp', image_name))
             
             base64encode_origin = image_base64(image_path)
-            base64encode_processed = image_base64(os.path.join('./images', image_name))
+            base64encode_processed = image_base64(os.path.join('/tmp', image_name))
 
             row_data = [image_name, base64encode_origin, base64encode_processed]
             df.loc[idx] = row_data
