@@ -124,7 +124,6 @@ class SegmentationDataset(FeaturizeDataset):
         try:
             print(image_path)
             img = cv2.imread(image_path)
-            img = cv2.resize(img, (1600,256))
         except:
             #self.miss_count += 1
             return
