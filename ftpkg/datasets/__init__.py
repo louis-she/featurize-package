@@ -112,6 +112,7 @@ class SegmentationDataset(FeaturizeDataset):
         for idx, mask in enumerate(labels.values):
             if mask is not np.nan:
                 mask_array = rle2mask(mask, shape)
+                print(shape)
                 masks[:, :, idx] = cv2.resize(mask_array.reshape(shape[0], shape[1], order='F'), (shape[1], shape[0]))
         results = masks
         return results
@@ -121,6 +122,7 @@ class SegmentationDataset(FeaturizeDataset):
         image_id = self.df.iloc[idx][self.fnames]
         image_path = os.path.join(self.root, image_id)
         try:
+            print(image_path)
             img = cv2.imread(image_path)
             img = cv2.resize(img, (1600,256))
         except:
@@ -159,7 +161,6 @@ class TrainDataset(Dataset):
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
         
         fold = os.path.join(os.getcwd(), self.upload[0].split('.zip')[0].split('./')[1])
-        print(fold)
         with ZipFile(self.upload[0], 'r') as zip_object:
             zip_object.extractall(os.path.split(fold)[0])
         df = pd.read_csv(self.annotations[0])
