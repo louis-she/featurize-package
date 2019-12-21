@@ -112,7 +112,6 @@ class SegmentationDataset(FeaturizeDataset):
         for idx, mask in enumerate(labels.values):
             if mask is not np.nan:
                 mask_array = rle2mask(mask, shape)
-                print(shape)
                 masks[:, :, idx] = cv2.resize(mask_array.reshape(shape[0], shape[1], order='F'), (shape[1], shape[0]))
         results = masks
         return results
@@ -122,7 +121,6 @@ class SegmentationDataset(FeaturizeDataset):
         image_id = self.df.iloc[idx][self.fnames]
         image_path = os.path.join(self.root, image_id)
         try:
-            print(image_path)
             img = cv2.imread(image_path)
         except:
             #self.miss_count += 1
