@@ -159,6 +159,7 @@ class TrainDataset(Dataset):
         #assert 0 <= split_ratio <= 1, 'Split Ratio must be between 0 to 1'
         
         fold = os.path.join(os.getcwd(), self.upload[0].split('.zip')[0].split('./')[1])
+        print(fold)
         with ZipFile(self.upload[0], 'r') as zip_object:
             zip_object.extractall(os.path.split(fold)[0])
         df = pd.read_csv(self.annotations[0])
