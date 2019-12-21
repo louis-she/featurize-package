@@ -134,7 +134,7 @@ class TrainSegmentation(Task, MixinMetaSeg):
     def __call__(self):
         train_dataset, val_dataset = self.dataset
         #kfold = len(self.dataset)
-        self.loss.pos_weight = torch.ones(4,256,1600).cuda() * 15
+        #self.loss.pos_weight = torch.ones(4,256,1600).cuda() * 15
 
         miner = minetorch.Miner(
             alchemistic_directory='./log',
