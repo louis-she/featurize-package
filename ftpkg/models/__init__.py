@@ -30,7 +30,7 @@ class SegmentationModel(Model):
     encoder_name = Option(default='resnet34', type='collection', collection=encoder_name_collection)
     encoder_weights = Option(default='imagenet', type='collection', collection=encoder_weights_collection)
     num_classes = Option(default=2, type='number', help='class number of mask')
-    model_architecture = Option(defalt='Unet', type='collection', collection=architecture_collection)
+    model_architecture = Option(default='Unet', type='collection', collection=architecture_collection)
     
     def create_model(self):
         kwargs = {

@@ -16,12 +16,12 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 colors = [
-    (255,255,0),
-    (0,255,255),
-    (255,0,255),
     (0,0,255),
     (0,255,0),
-    (255,0,0)
+    (255,0,0),
+    (255,255,0),
+    (0,255,255),
+    (255,0,255)
     ]
 
 
@@ -67,9 +67,8 @@ class Visualize(Task, MixinMeta):
             outputs = [torch.sigmoid(logit) for logit in logits]
         else:
             outputs = logits
-        
+
         df = pd.DataFrame(columns=['Image Name', 'Image Preview (ImageBase64)', 'Image With Masks (ImageBase64)'])
-        
         for idx, image_path in enumerate(self.input_images):
             # DISPLAY IMAGES WITH DEFECTS
             image_name = image_path.split('/')[-1]
@@ -77,9 +76,11 @@ class Visualize(Task, MixinMeta):
             img = Image.open(image_path)
             img_array = np.array(img)
             patches = []
+
             for classes in range(len(outputs[idx])):
                 try:
                     msk = cv2.threshold(outputs[idx][classes].detach().numpy(), self.pixel_threshold, 1, cv2.THRESH_BINARY)[1]
+
                     if msk.shape != shape[0:2]:
                         msk = cv2.resize(msk, dsize=(shape[1], shape[0]), interpolation=cv2.INTER_LINEAR)
                 except:

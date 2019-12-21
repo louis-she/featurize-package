@@ -1,8 +1,10 @@
 import cv2
+import torch
 import minetorch
 import pandas as pd
 import torch.nn.functional as F
 
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from featurize_jupyterlab.core import BasicModule, DataflowModule, Option, Task
 from featurize_jupyterlab.task import env
 from featurize_jupyterlab.utils import get_transform_func, image_base64
@@ -131,7 +133,9 @@ class TrainSegmentation(Task, MixinMetaSeg):
 
     def __call__(self):
         train_dataset, val_dataset = self.dataset
-        kfold = len(self.dataset)
+        #kfold = len(self.dataset)
+        self.loss.pos_weight = torch.ones(4,256,1600).cuda() * 15
+
         miner = minetorch.Miner(
             alchemistic_directory='./log',
             model=self.model,
